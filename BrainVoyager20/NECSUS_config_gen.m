@@ -1,3 +1,12 @@
+%% BRAINVOYAGER creation of the config file
+% Script that created the configuration variable
+% Requires -
+
+% Version 1.0
+% - Overall restructure
+
+% Author: Bruno Direito (2018)
+
 %% retinotopy
 datasetConfigs = struct();
 datasetConfigs.subjects = {'sub-01', 'sub-02', 'sub-03'};

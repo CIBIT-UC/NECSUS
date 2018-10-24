@@ -1,17 +1,29 @@
-function [ success ] = createDICOM_folder_struct( datasetConfigs )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+function [ success ] = createDicomFolderStructure( datasetConfigs )
+% createDicomFolderStructure creates a structured folder based on the DICOM
+% files and config files
+% input - 
+%   datasetConfigs presents the specifications of the experiment
+% output - 
+%   success: True if folder is created correctly, False if folder was not
+%   created
+%
+% Version 1.0
+% - Overall restructure
+%
+% Author: Bruno Direito (2018)
+
+%% Configs and presets
 clc,
 success = false;
 
 % Get all the DICOM files available in the raw data folder from MR scanner
-D = dir(fullfile(datasetConfigs.raw_dicom_path,'*.ima'));
+D = dir( fullfile(datasetConfigs.rawData,'*.ima') ); % .IMA extension
 
 % Check total number of required files in configs
-if (length(D) < sum(datasetConfigs.volumes_per_run)) && (length(D) > 5)
-    fprintf('[createFolderStructure] Fewer files than expected...');
-elseif (length(D) < sum(datasetConfigs.volumes_per_run)) && (length(D) < 5)
-    D = dir(fullfile(datasetConfigs.raw_dicom_path,'*.dcm'));
+if (length(D) < sum(datasetConfigs.volumes)) && (length(D) > 5)
+    fprintf('[debug:createDicomFolderStructure] Fewer files than expected...');
+elseif (length(D) < sum(datasetConfigs.volumes)) && (length(D) < 5)
+    D = dir(fullfile(datasetConfigs.rawData,'*.dcm')); % .dcm extension
 end
 
 files = extractfield(D,'name')';
@@ -20,18 +32,23 @@ files = extractfield(D,'name')';
 %   example:  firstDCMfile = dicominfo(fullfile(D(1).folder,D(1).name));
 %             firstDCMfile.PatientID
 
+% initialize series variable
+series = zeros(length(files),1);
 for i=1:length(files)
-    
-    % Get series number by filename token
+    % Get series number by filename token 
+    % (fourth token corresponds to the series)
     temp = split(files{i}, '.');
     series(i,1) = str2double(temp(4));
-    
 end
 
+% unique (dicom) files series
 seriesNumbers = unique(series);
+% number of volumes per series
 seriesVolumes = hist(series,length(1:seriesNumbers(end)));
+% remove series numbers with zero elements
 seriesVolumes = seriesVolumes(seriesVolumes~=0);
 
+% get number of runs defined in the configs file
 n_runs = length(datasetConfigs.runs);
 
 % TODO / REVIEW: Double check number of runs and their size before continuing!!!!

@@ -34,9 +34,15 @@ if isempty(subjectIndex)
     error('Invalid Subject Name')
 end
 
-% else - proceed
-datasetConfigs.subjectCode = subjectName; %changed var name
-datasetConfigs.rawData = 'C:\Users\Bruno\Desktop\NECSUS\data\Raw\ALZIRAQUATORZE'; %changed var name
+% else
+datasetConfigs.subject_code = subjectName;
+
+
+datasetConfigs.raw_dicom_path = 'C:\Users\Bruno\Desktop\NECSUS\data\Raw\ALZIRAQUATORZE';
+
+   
+
+
 
 % Automatic IIHC
 performIIHC = 0;              
@@ -56,14 +62,14 @@ alignRun = '';
 performBBR = 1;               
 
 
+
+
 %% -- Create Folder Structure
-[ success ] =  createDicomFolderStructure( datasetConfigs );
+[ success ] =  createDICOM_folder_struct( datasetConfigs );
 
 assert(success,'Folder creation aborted.');
 clear dataPath dataTBV;
 
-
-%TODO - -BD 24/10
 %% -- Initialize
 
 configs = struct(); % Settings Structure
