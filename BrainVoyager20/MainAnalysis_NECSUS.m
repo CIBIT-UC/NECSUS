@@ -27,6 +27,8 @@ load('Configs_NECSUS.mat')
 
 % Participant's name
 subjectName = 'sub-01'; 
+% Session's name
+sessionName = 'ses-01';
 % identify ID of participant in configs file
 subjectIndex = find(not(cellfun('isempty', strfind(datasetConfigs.subjects, subjectName))));
 % if error stop and correctly identify the participant
@@ -36,6 +38,7 @@ end
 
 % else - proceed
 datasetConfigs.subjectCode = subjectName; %changed var name
+datasetConfigs.sessionCode = sessionName;% change session name
 datasetConfigs.rawData = 'C:\Users\Bruno\Desktop\NECSUS\data\Raw\ALZIRAQUATORZE'; %changed var name
 
 % Automatic IIHC

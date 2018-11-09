@@ -14,6 +14,10 @@ datasetConfigs = struct();
 datasetConfigs.subjects = {
     'sub-01', 'sub-02', 'sub-03'
     };
+% session ID
+datasetConfigs.sessions = {
+    'ses-01', 'ses-02'
+    };
 
 % anat or func (according to BIDS structure)
 datasetConfigs.folders = {  
