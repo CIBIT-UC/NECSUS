@@ -1,25 +1,27 @@
-function [b,K] = binom_weib( r, m, x, p, initK, guessing, lapsing )
+function [b,K] = binom_revweib( r, m, x, p, initK, guessing, lapsing)
 %
-% Maximum likelihood estimates of the parameters of the Weibull model for
-% the psychometric function.
+% Maximum likelihood estimates of the parameters of the reverse Weibull
+% model for the psychometric function.
+%
 %
 % INPUT
 %
-% r - number of successes ai points x
+% r - number of successes at points x
 % m - number of trials at points x 
 % x - stimulus levels
 %
 % OPTIONAL INPUT
 % 
 % p - degree of the polynomial; default is 1 
-% initK - initial value for K (power parameter in Weibull model); default is 2 
+% initK - initial value for K (power parameter in reverse Weibull model);
+% default is 2 
 % guessing - guessing rate; default is 0
 % lapsing - lapsing rate; default is 0
 %
 % OUTPUT
 % 
 % b - vector of estimated coefficients for the linear part
-% K - estimate of the power parameter in the Weibull model
+% K - estimate of the power parameter in the reverse Weibull model
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % % PROGRAM
@@ -30,7 +32,6 @@ if (nargin<3)
     error('Check input. First 3 arguments are mandatory');
 end
 
-
 %%%% DEFAULTS
 if (nargin<4)
     p = 1;
@@ -39,7 +40,7 @@ end
 
 if (nargin<5)
     initK = 2;
-    disp('initial value for K (power parameter in Weibull model) is 2');
+    disp('initial value for K (power parameter in reverse Weibull model) is 2');
 end
 
 if (nargin<6)
@@ -51,7 +52,6 @@ if (nargin<7)
     lapsing = 0;
     disp('default lapsing rate is zero');
 end
-
 
 %%%% CHECK ROBUSTNESS OF INPUT PARAMETERS
 clear data;
@@ -78,38 +78,37 @@ x = tmp1;
 Lx = length(x);
 X = repmat(x,1,p).^repmat((1:p),Lx,1);
 
-
 % GLM ESTIMATION
 s_msg_id = warning('query','all');
 warning('off','stats:glmfit:IterationLimit');
 warning('off','stats:glmfit:BadScaling');
 
-initK = log( initK );
+initK = log(initK);
 K = fminsearch(@(K) likfun(K,X,[r m],guessing,lapsing),initK,optimset('MaxFunEvals',5000,...
     'MaxIter',5000,'TolX',1e-3,'TolFun',1e-3));
 K = .05+exp(K);
 
 warning(s_msg_id)
+%%%%%%%%%
 %%% SET LINK
-link = weibull_link_private( K, guessing, lapsing );
+link = revweibull_link( K, guessing, lapsing );
 
+%%%%%%
 % GLM
-b = glmfit(X,[r m],'binomial','link',link);
+b = glmfit( X, [r m], 'binomial', 'link', link);
 
-    
 % % % % % % % % % % % % % % % % % % 
 % % % INTERNAL FUNCTIONS % % % % % 
 % % % % % % % % % % % % % % % % % % 
 
-%%%%%%%%%%%%%%%%%% LIKELIHOOD %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%% LIKELIHOOD %%%%%%%%%%%%%%%%%%%%%%%%%%%
 function res = likfun(K,x,Y,guessing,lapsing)
 
 K = .05+exp(K);
 
 %%% SET LINK
-link = weibull_link_private( K, guessing, lapsing );
-
+link = revweibull_link( K, guessing, lapsing );
 
 % GLM
 b = glmfit(x,Y,'binomial','link',link);
@@ -121,5 +120,5 @@ fitted( fitted >= 1 - lapsing ) = 1 - lapsing - eps;
 
 % LIKELIHOOD
 res = -(Y(:,1)' * log(fitted) + (Y(:,2) - Y(:,1))' * log(1 - fitted));
-%pause
+
 %%%%%%% END LIKELIHOOD %%%%%%%%%%%%%%%%%%%%%%

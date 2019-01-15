@@ -12,5 +12,7 @@ Bb = round(RGB_Grey);
 % desvio devido ao arredondamento
 real_Grey = Rb/((2^(bits_resolution))-1);
 
+fprintf('real gray value normalized: %f.\n', real_Grey)
+
 lum_obtained = (FitParameters(1,1)*(real_Grey^(FitParameters(1,2))))+FitParameters(1,3);
 end
