@@ -26,7 +26,17 @@ quest.q=QuestCreate(quest.estMean,...
 quest.q.normalizePdf=1;
 
 
-%%
+%% get next trial
+getNextQuestTrial(quest)
 
-getNextQuestTrial( quest )
+%% update algorithm
+
+
+% -----------------TODO---------------------
+updateQuestEstimate(quest, contrastTrial, response)
+
+
+
+
+
 
