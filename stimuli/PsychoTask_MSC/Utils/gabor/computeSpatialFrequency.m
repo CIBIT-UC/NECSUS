@@ -1,6 +1,8 @@
-function [SF] = getSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF)
-
-%This function calculates the Spatial Frequency desired (cycles Per Pixel)
+function [spatFreq] = computeSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF)
+% computeSpatialFrequency calculates the Spatial Frequency desired (cycles Per Pixel)
+%   spatFreq = computeSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF)
+%
+% 
 
     % pixel size  
     PixelSize = screenHeight/screenYpixels;
@@ -15,7 +17,7 @@ function [SF] = getSpatialFrequency(screenHeight,screenYpixels,viewingDistance,d
     pixelsPerPeriod = pixelsInDegree/desiredSF;  
 
     % How many periods/cycles are there in a pixel?
-    SF= 1/pixelsPerPeriod;
+    spatFreq=1/pixelsPerPeriod;
 
 
 end

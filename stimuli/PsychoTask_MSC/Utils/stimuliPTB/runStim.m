@@ -9,121 +9,59 @@ try
     Priority(2); % Set "real time priority level".    
     [window,~]=Screen('OpenWindow', ptb.whichScreen); % Open PTB full-screen window.
     
-    % --- MONITOR SETUP / Linearize monitor gamma ---
+    % MONITOR SETUP / Linearize monitor gamma
     linearCLUT=Screen('LoadNormalizedGammaTable',window,inverseGammaTable); % upload inverse gamma function to screen - linearize lum.
     normlzInput=luminanceToRgb(ptb.backgroundLum);
     
     % Define white.
     white=WhiteIndex(ptb.screenNumber); % required to display fixation cross
     
-    
     % --- START DISPLAY ---
     
     % Open an on screen window
-    [window, windowRect]=Screen('OpenWindow', screenNumber,[normlzInput,normlzInput,normlzInput],[],[],[],[],0);
+    [window, windowRect]=Screen('OpenWindow',...
+        ptb.screenNumber,...
+        [normlzInput,normlzInput,normlzInput],... % Background RGB values.
+        [],[],[],[],0);
     
     % Get the size of the on screen window
-    [screenXpixels, screenYpixels]=Screen('WindowSize', window);
+    [lcd.screenXpixels, lcd.screenYpixels]=Screen('WindowSize', window);
     % Set the text size
     Screen('TextSize', window, 50);
     
-    
-    % --- PARAMETER SETUP ---
-    
-    % --- GABOR INFO ---
-    
-    % Get Spatial Frequency (cycles Per Pixel) and  gabor dimensions
-    [SF] = getSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF);
-    [gaborDimPix] = getGaborDimPix(screenWidth,screenXpixels,viewingDistance,gaborDimDegree);
-    
-    % Sigma of Gaussian
-    sigma = gaborDimPix /7;
-    
-    % Build a procedural gabor texture
-    gabortex = CreateProceduralGabor(window, gaborDimPix, gaborDimPix, 0,[normlzInput,normlzInput,normlzInput, 0.0]);
-    
-    
     % Fixation cross
+    fCross=designFixationCross(windowRect);
     
-    % Get the centre coordinate of the window
-    [xCenter, yCenter]=RectCenter(windowRect);
     HideCursor;
     
-    % set of size of the arms of our fixation cross
-    fixCrossDimPix=20;
-    
-    % set the coordinates for fixation cross in the center of the screen
-    xCrossCoords=[-fixCrossDimPix fixCrossDimPix 0 0];
-    yCrossCoords=[0 0 -fixCrossDimPix fixCrossDimPix];
-    CrossCoords=[xCrossCoords; yCrossCoords];
-    
-    % set the line width for our fixation cross
-    lineWidthPix=4;
-    
-    %-------------------------TIME INFORMATION---------------------------%
-    
-    % Query the frame duration
-    ifi = Screen('GetFlipInterval', window);
-    
-    % Presentation Time for the Gabor in seconds and frames
-    presTimeSecs = 0.5; %500msec
-    presTimeFrames = round(presTimeSecs / ifi);
-    
-    % Interstimulus interval time in seconds and frames
-    isiTimeSecs = 1; %1000msec
-    isiTimeFrames = round(isiTimeSecs / ifi);
-    
-    
-    % -------------------- KEYBORD INFORMATION ------------------------%
-    
-    escapekey=KbName('Escape');
-    keyNotView=KbName('z'); % key not see
-    keyView=KbName('m'); % key to see
-    
-    
+    % --- STIMULUS PARAMETER SETUP ---
+    stim=stimulusDefinition(lcd, gabor, window);
+
+    % Build a procedural gabor texture - PTB3
+    gabor.gabortex = CreateProceduralGabor(window,...
+        stim.gaborDimPix,...
+        stim.gaborDimPix,...
+        0,...
+        [normlzInput,normlzInput,normlzInput,...
+        0.0]);
+   
     %-----------------------------------------------------------------%
     %                      EXPERIMENTAL LOOP
     %-----------------------------------------------------------------%
     
-    countDownVals={'1','2','3'};
-    
+    % Stopping criteria var.
     sCrit = 0;
     
     for trial = 1:nTrials
         
-        t=QuestMean(q);
-        sd=QuestSd(q);
-        fprintf('Value of QUEST mean %f and sd %f.\n',t,sd);
-        
-        % set stopping criteria
-        if sd < deltInt
-            sCrit = 1;
-            break,
-        end
-        
         if ~sCrit
-            % Get the Gabor contrast
-            % tTest=QuestQuantile(q);
-            % tTest=QuestMean(q)		% Recommended by King-Smith et al. (1994)
-            % tTest=QuestMode(q);		% Recommended by Watson & Pelli (1983)
             
-            [~,sortdIdxs]=sort(abs(QuestMean(q)-CSFScale));
-            %[~,idx]=min(abs(QuestMean(q)-CSFScale));
-            
-            idx=sortdIdxs(1);
-            
-            if CSFScale(sortdIdxs(1))==last
-                idx=sortdIdxs(2);
-            end
-            
-            fprintf('Next contrast test %f.\n', CSFScale(idx) );
-            
-            tTest=CSFScale(idx);
+            contrastTrial=getNextQuestTrial(quest);
             
             % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
             
             if trial==1
-                tTest=init;
+                contrastTrial=init;
                 
                 % Change the blend function to draw an antialiased fixation point
                 % in the centre of the screen
@@ -164,7 +102,7 @@ try
                 
                 % Draw the Gabor
                 Screen('DrawTexture', window, gabortex, [], [], angle, [], [], ...
-                    [], [], kPsychDontDoRotation, [phase+180, SF, sigma, tTest, aspectratio, 0, 0, 0]);
+                    [], [], kPsychDontDoRotation, [phase+180, spatFreq, sigma, contrastTrial, aspectratio, 0, 0, 0]);
                 
                 % Flip to the screen
                 Screen('Flip', window);
@@ -196,28 +134,28 @@ try
                     return
                 elseif keyCode(keyView)
                     respMatrix(trial,1) = trial;
-                    respMatrix(trial,2) = tTest;
+                    respMatrix(trial,2) = contrastTrial;
                     respMatrix(trial,3) = 1;
                     respToBeMade = false;
                     % Update the pdf
                     response=1;
-                    q=QuestUpdate(q,tTest,response); % Add the new data (actual test intensity and observer response) to the database.
+                    quest.q=QuestUpdate(quest.q,contrastTrial,response); % Add the new data (actual test intensity and observer response) to the database.
                     
                 elseif keyCode(keyNotView)
                     respMatrix(trial,1) = trial;
-                    respMatrix(trial,2) = tTest;
+                    respMatrix(trial,2) = contrastTrial;
                     respMatrix(trial,3) = 0;
                     respToBeMade = false;
                     % Update the pdf
                     response=0;
-                    q=QuestUpdate(q,tTest,response); % Add the new data (actual test intensity and observer response) to the database.
+                    quest.q=QuestUpdate(quest.q,contrastTrial,response); % Add the new data (actual test intensity and observer response) to the database.
                     
                 end
             end
             
         end
         
-        last=tTest;
+        last=contrastTrial;
         % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
     end
     

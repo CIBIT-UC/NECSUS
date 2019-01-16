@@ -43,13 +43,13 @@ gabor=gaborInfo(SPATIALFREQ);
 % --- Quest threshold estimation ---
 quest=initializationQuest();
 
-% Provide our prior knowledge to QuestCreate, and receive the data struct "q".
-tGuess=quest.estMean;
-tGuessSd=quest.estStd;
+% % Provide our prior knowledge to QuestCreate, and receive the data struct "q".
+% tGuess=quest.estMean;
+% tGuessSd=quest.estStd;
 
 %q=QuestCreate(tGuess,tGuessSd,pThreshold,beta,delta,gamma, grain, dim);
-q=QuestCreate(tGuess,...
-    tGuessSd,...
+quest.q=QuestCreate(quest.estMean,...
+    quest.estStd,...
     quest.pThreshold,...
     quest.beta,...
     quest.delta,...
@@ -58,7 +58,7 @@ q=QuestCreate(tGuess,...
     quest.dim);
 
 % This adds a few ms per call to QuestUpdate, but otherwise the pdf will underflow after about 1000 trials.
-q.normalizePdf=1;
+quest.q.normalizePdf=1;
 
 %% STIMULI presentation
 
@@ -74,6 +74,7 @@ ptb.screenNumber=max(ptb.screens);
 ptb.backgroundLum=BACKGROUNDLUM;
 
 runStim(ptb, lcd, gabor, quest);
+
 
 %% --- Results eval ---
 % Print results of timing.
