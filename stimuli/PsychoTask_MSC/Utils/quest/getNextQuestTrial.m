@@ -1,4 +1,4 @@
-function [ contrastTrial ] = getNextQuestTrial( quest )
+function [ quest ] = getNextQuestTrial( quest )
 %GETNEXTQUESTTRIAL Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -24,7 +24,7 @@ end
 fprintf('Next contrast test %f.\n', quest.CsfScale(idx) );
 
 % Return and avoid repetition.
-contrastTrial=quest.CsfScale(idx);
+quest.contrastTrial=quest.CsfScale(idx);
 
 
 end

@@ -28,6 +28,7 @@ quest.q.normalizePdf=1;
 
 %% get next trial
 quest=getNextQuestTrial(quest);
+
 fprintf('next trial: %.3f', quest.contrastTrial);
 
 %% update algorithm

@@ -56,12 +56,11 @@ try
         
         if ~sCrit
             
-            contrastTrial=getNextQuestTrial(quest);
+            quest=getNextQuestTrial(quest);
             
             % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
             
             if trial==1
-                contrastTrial=init;
                 
                 % Change the blend function to draw an antialiased fixation point
                 % in the centre of the screen
@@ -102,7 +101,7 @@ try
                 
                 % Draw the Gabor
                 Screen('DrawTexture', window, gabortex, [], [], angle, [], [], ...
-                    [], [], kPsychDontDoRotation, [phase+180, spatFreq, sigma, contrastTrial, aspectratio, 0, 0, 0]);
+                    [], [], kPsychDontDoRotation, [phase+180, spatFreq, sigma, quest.contrastTrial, aspectratio, 0, 0, 0]);
                 
                 % Flip to the screen
                 Screen('Flip', window);
@@ -133,29 +132,27 @@ try
                     sca;
                     return
                 elseif keyCode(keyView)
-                    respMatrix(trial,1) = trial;
-                    respMatrix(trial,2) = contrastTrial;
-                    respMatrix(trial,3) = 1;
+                    respMatrix(trial,:) = [trial,quest.contrastTrial ,1];
+
                     respToBeMade = false;
                     % Update the pdf
                     response=1;
-                    quest.q=QuestUpdate(quest.q,contrastTrial,response); % Add the new data (actual test intensity and observer response) to the database.
+                    quest.q=QuestUpdate(quest.q,quest.contrastTrial,response); % Add the new data (actual test intensity and observer response) to the database.
                     
                 elseif keyCode(keyNotView)
-                    respMatrix(trial,1) = trial;
-                    respMatrix(trial,2) = contrastTrial;
-                    respMatrix(trial,3) = 0;
+                    respMatrix(trial,:) = [trial,quest.contrastTrial ,0];
+                    
                     respToBeMade = false;
                     % Update the pdf
                     response=0;
-                    quest.q=QuestUpdate(quest.q,contrastTrial,response); % Add the new data (actual test intensity and observer response) to the database.
+                    quest.q=QuestUpdate(quest.q,quest.contrastTrial,response); % Add the new data (actual test intensity and observer response) to the database.
                     
                 end
             end
             
         end
         
-        last=contrastTrial;
+        last=quest.contrastTrial;
         % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
     end
     
