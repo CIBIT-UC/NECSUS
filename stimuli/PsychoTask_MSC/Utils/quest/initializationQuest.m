@@ -6,12 +6,11 @@ function [questStruct] = initializationQuest()
 
 questStruct=struct(); %init struct
 
+questStruct.name="QUEST";
+
 % Estimation based on previous data / initial guess
 questStruct.estMean=6.2980;
 questStruct.estStd=4.3992;
-
-% Stopping criteria
-questStruct.nTrials=50;
 
 % QUEST parameters
 questStruct.CsfScale=0:.3:60;
@@ -19,7 +18,6 @@ questStruct.deltInt=.15;
 questStruct.init=6;
 questStruct.direction=0;
 questStruct.last=questStruct.init;
-
 
 % Watson AB, Pelli DG (1983) Quest: A Bayesian adaptive psychometric method. Percept Psychophys 33:113–120.
 questStruct.pThreshold=0.82;
@@ -32,4 +30,24 @@ questStruct.dim=250;
 
 questStruct.plotIt=1;
 
+% Provide our prior knowledge to QuestCreate, and receive the data struct "q".
+% tGuess=quest.estMean;
+% tGuessSd=quest.estStd;
+
+%q=QuestCreate(tGuess,tGuessSd,pThreshold,beta,delta,gamma, grain, dim);
+questStruct.q=QuestCreate(questStruct.estMean,...
+    questStruct.estStd,...
+    questStruct.pThreshold,...
+    questStruct.beta,...
+    questStruct.delta,...
+    questStruct.gamma,...
+    questStruct.grain,...
+    questStruct.dim);
+
+% This adds a few ms per call to QuestUpdate, but otherwise the pdf will underflow after about 1000 trials.
+questStruct.q.normalizePdf=1;
+% Stopping criteria
+
+
+questStruct.nTrials=50;
 end

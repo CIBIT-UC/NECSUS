@@ -19,6 +19,8 @@ addpath(genpath('Utils'));
 
 PARTICIPANTNAME=input('Name:','s'); % participant's name
 
+METHOD='ConstantStimuli'; %'QUEST' | 'ConstantStimuli' | ??
+
 SPATIALFREQ=10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
 HASGLARE=1; % input('glare/noglare?:','s'); % glare setup
 BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
@@ -38,27 +40,9 @@ gabor=gaborInfo(SPATIALFREQ);
 
 %% ----------------------------INITIALIZE----------------------------------
 
-% --- QUEST ---
+% --- init method struct ---
+methodStruct=methodInitialization(METHOD);
 
-% --- Quest threshold estimation ---
-quest=initializationQuest();
-
-% % Provide our prior knowledge to QuestCreate, and receive the data struct "q".
-% tGuess=quest.estMean;
-% tGuessSd=quest.estStd;
-
-%q=QuestCreate(tGuess,tGuessSd,pThreshold,beta,delta,gamma, grain, dim);
-quest.q=QuestCreate(quest.estMean,...
-    quest.estStd,...
-    quest.pThreshold,...
-    quest.beta,...
-    quest.delta,...
-    quest.gamma,...
-    quest.grain,...
-    quest.dim);
-
-% This adds a few ms per call to QuestUpdate, but otherwise the pdf will underflow after about 1000 trials.
-quest.q.normalizePdf=1;
 
 %% STIMULI presentation
 
@@ -69,11 +53,13 @@ syncTrick(); % Run sync trick proposed by PTB dev.
 ptb.screens=Screen('Screens');
 
 % Draw to the external screen if avaliable
-ptb.screenNumber=max(ptb.screens);
+ptb.screenNumber=2;% max(ptb.screens);
 
 ptb.backgroundLum=BACKGROUNDLUM;
 
-runStim(ptb, lcd, gabor, quest);
+%% RUN stimuli
+
+runStim(ptb, lcd, gabor, methodStruct);
 
 
 %% --- Results eval ---
