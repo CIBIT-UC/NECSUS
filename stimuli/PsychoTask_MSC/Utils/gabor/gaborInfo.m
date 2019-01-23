@@ -2,7 +2,7 @@ function [ gabor ]=gaborInfo(sfrq)
 % gaborInfo sets gabor info into a structure
 %   gabor = gaborInfo(sfrq) creates a structure with gabor info.
 %
-% 
+%
 
 gabor=struct();
 
@@ -17,4 +17,3 @@ gabor.desiredSF=sfrq; % Desired Spatial Frequency in cpd.
 gabor.presTimeSecs = 0.5; %500msec
 
 end
-
