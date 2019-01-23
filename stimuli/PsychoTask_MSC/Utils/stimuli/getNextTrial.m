@@ -4,7 +4,7 @@ switch methodStruct.name
     case 'QUEST'
         methodStruct=getNextQuestTrial(methodStruct);
     case 'ConstantStimuli'
-        methodStruct=getNextQuestTrial(methodStruct);
+        methodStruct=getNextConstStimTrial(methodStruct);
 end
 
 

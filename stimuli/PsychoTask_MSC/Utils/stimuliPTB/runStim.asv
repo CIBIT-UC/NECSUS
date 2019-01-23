@@ -6,15 +6,15 @@ function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct )
 load('.\Utils\luminance\invertedCLUT.mat');
 
 try
-    
-    % Transform luminance required to rgb input.
-    rgbInput=luminanceToRgb(ptb.backgroundLum) 
-    
     % --- PTB setup ---
     Priority(2); % Set "real time priority level".
-    %[window,~]=Screen('OpenWindow', ptb.screenNumber); % Open PTB full-screen window.
+    [window,~]=Screen('OpenWindow', ptb.screenNumber); % Open PTB full-screen window.
     
-
+    % MONITOR SETUP / Linearize monitor gamma.
+    linearCLUT=Screen('LoadNormalizedGammaTable',window,repmat(invertedCLUT, [3,1])' ); % upload inverse gamma function to screen - linearize lum.
+    % Transform luminance required to rgb input.
+    rgbInput=luminanceToRgb(ptb.backgroundLum); 
+    
     
     % --- START DISPLAY ---
     
@@ -27,14 +27,6 @@ try
         [],...
         [],...
         0);
-    
-    % MONITOR SETUP / Linearize monitor gamma.
-    % upload inverse gamma function to screen - linearize lum.
-    linearCLUT=Screen('LoadNormalizedGammaTable',...
-        window,...
-        repmat(invertedCLUT, [3,1])' ); 
-    
-    
     % Define white.
     white=WhiteIndex(ptb.screenNumber); % required to display fixation cross
     % Define center of the screen.
@@ -89,6 +81,7 @@ try
         WaitSecs(1);
     end
     
+    
     % --- Main loop ---
     
     while ~methodStruct.isComplete
@@ -99,7 +92,7 @@ try
         % Present fixation cross.
         
         % Chrono.
-        time.fCrossPres(methodStruct.trialIdx)=GetSecs;
+        time.fCrossPres=GetSecs;
         
         % Change the blend function to draw an antialiased fixation
         % point in the centre of the screen.
@@ -117,25 +110,25 @@ try
         Screen('Flip', window);
         
         % Wait until fixation cross period ends.
-        WaitSecs( (time.fCrossPres(methodStruct.trialIdx)+stim.isiDurationSecs) - GetSecs );
+        WaitSecs( (time.fCrossPres+stim.isiDurationSecs) - GetSecs );
                 
         
         % Present Gabor.
         % Chrono.
-        time.stimPres(methodStruct.trialIdx)=GetSecs;
+        time.stimPres=GetSecs;
        
         % Set the right blend function for drawing the gabors.
         Screen('BlendFunction', window, 'GL_ONE', 'GL_ZERO');
 
         % Draw the Gabor.
-        Screen('DrawTexture', window, gabor.gabortex, [], [], gabor.angle, [], [], ...
-            [], [], kPsychDontDoRotation, [gabor.phase+180, gabor.desiredSF, stim.sigma, methodStruct.contrastTrial, gabor.aspectratio, 0, 0, 0]);
-       
+        Screen('DrawTexture', window, gabor.gabortex, [], [], angle, [], [], ...
+            [], [], kPsychDontDoRotation, [phase+180, spatFreq, sigma, methodStruct.contrastTrial, aspectratio, 0, 0, 0]);
+
         % Flip to the screen.
         Screen('Flip', window);
         
         % Wait until stim presentation period ends.
-        WaitSecs( (time.fCrossPres(methodStruct.trialIdx)+stim.stimDurationSecs) - GetSecs );
+        WaitSecs( (time.fCrossPres+stim.stimDurationSecs) - GetSecs );
              
         % Now we wait for a keyboard button signaling the observers response.
         % The 'm' key signals a positive response
@@ -148,14 +141,14 @@ try
         
         while ~hasResponse
             % Check key pressed.
-            [~,time.respkeyPressed(methodStruct.trialIdx),keyCode] = KbCheck;
+            [~,time.respkeyPressed,keyCode] = KbCheck;
             
             % If participant saw gabor, then.
             if keyCode(stim.keyView)
                 
                 hasResponse = true;
                 % Save results.
-                response(methodStruct.trialIdx,:) = [methodStruct.trialIdx,...
+                response(trial,:) = [methodStruct.trialIdx,...
                     methodStruct.contrastTrial,...
                     1];
                 
@@ -167,14 +160,14 @@ try
                 hasResponse = true;
                 
                 % Save results.
-                response(methodStruct.trialIdx,:) = [methodStruct.trialIdx,...
+                response(trial,:) = [methodStruct.trialIdx,...
                     methodStruct.contrastTrial,...
                     0];
                 % Update estimation models.
              	methodStruct=updateEstimate(methodStruct,0); 
                 
             % Exit program if escape key is pressed.
-            elseif keyCode(stim.escapekey) 
+            elseif keyCode(escapekey) 
                 hasResponse = true;
                 methodStruct.isComplete=1;
                 fprintf('The participant pressed the escape key.\n');
@@ -187,7 +180,7 @@ try
         % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
     end
     
-    Screen('CloseAll');
+    Screen('Close',window);
     ShowCursor;
     Priority(0);
     

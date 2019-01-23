@@ -59,7 +59,7 @@ ptb.backgroundLum=BACKGROUNDLUM;
 
 %% RUN stimuli
 
-runStim(ptb, lcd, gabor, methodStruct);
+[responseMatrix,timesLog]=runStim(ptb, lcd, gabor, methodStruct);
 
 
 %% --- Results eval ---

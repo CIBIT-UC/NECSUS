@@ -46,8 +46,14 @@ questStruct.q=QuestCreate(questStruct.estMean,...
 
 % This adds a few ms per call to QuestUpdate, but otherwise the pdf will underflow after about 1000 trials.
 questStruct.q.normalizePdf=1;
-% Stopping criteria
 
 
+% --- Stopping criteria ----
+% stopping handle.
+questStruct.isComplete=0;
+% Stopping criteria (total number of trials tried).
 questStruct.nTrials=50;
+% Stopping criteria (i.e. sd=QuestSd(.q) less than ?).
+questStruct.sCrit=0.25;
+
 end

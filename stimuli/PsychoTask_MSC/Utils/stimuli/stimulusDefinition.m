@@ -7,7 +7,7 @@ function [ stimuli ] = stimulusDefinition( lcd, gabor, window)
 
 % Get Spatial Frequency (cycles Per Pixel) and  gabor dimensions
 stimuli.spatFreq=computeSpatialFrequency(lcd.screenHeight,lcd.screenYpixels,lcd.viewingDistance,gabor.desiredSF); % Y axis - orientation of the stimuli.
-stimuli.gaborDimPix=getGaborDimPix(lcd.screenWidth,lcd.screenXpixels,lcd.viewingDistance,gabor.gaborDimDegree);
+stimuli.gaborDimPix=computeGaborDimPix(lcd.screenWidth,lcd.screenXpixels,lcd.viewingDistance,gabor.gaborDimDegree);
 
 % Sigma of Gaussian
 stimuli.sigma = stimuli.gaborDimPix/7;
@@ -32,7 +32,7 @@ stimuli.keyNotView=KbName('z'); % key not see
 stimuli.keyView=KbName('m'); % key to see
 
 %---------------------- UTILS ---------------------------%
-stimuli.countDownVals={'1','2','3'};
+stimuli.countDownVals={'3','2','1'};
 
 end
 
