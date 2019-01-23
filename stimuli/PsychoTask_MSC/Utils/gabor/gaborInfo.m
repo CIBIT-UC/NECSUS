@@ -16,8 +16,5 @@ gabor.desiredSF=sfrq; % Desired Spatial Frequency in cpd.
 % Presentation Time for the Gabor in seconds and frames
 gabor.presTimeSecs = 0.5; %500msec
 
-    % Sigma of Gaussian
-    sigma = gaborDimPix /7;
-
 end
 

@@ -21,7 +21,7 @@ try
     % Open a screen window.
     [window, windowRect]=Screen('OpenWindow',...
         ptb.screenNumber,...
-        [rgbInput,rgbInput,rgbInput],... % Background RGB values.
+        [round(rgbInput*255),round(rgbInput*255),round(rgbInput*255)],... % Background RGB values.
         [],...
         [],...
         [],...
@@ -30,7 +30,7 @@ try
     
     % MONITOR SETUP / Linearize monitor gamma.
     % upload inverse gamma function to screen - linearize lum.
-    linearCLUT=Screen('LoadNormalizedGammaTable',...
+    originalCLUT=Screen('LoadNormalizedGammaTable',...
         window,...
         repmat(invertedCLUT, [3,1])' ); 
     
@@ -187,14 +187,21 @@ try
         % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
     end
     
+    fprintf('The experiment is finished.\n');
+    fprintf('Closing setup.\n');
+    % Restore originalCLUT.
+    Screen('LoadNormalizedGammatable', window, originalCLUT);
+    % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;
     Priority(0);
     
-    fprintf('The participant finished the experiment.\n');
+    
     
 catch me
     warning(me.message);
+    % Restore originalCLUT.
+    Screen('LoadNormalizedGammatable', window, originalCLUT);
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;
