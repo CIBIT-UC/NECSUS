@@ -3,7 +3,8 @@ function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct )
 
 % load gamma-corrected CLUT (color look-up table) - variable
 % "invertedCLUT".
-load('.\Utils\luminance\invertedCLUT.mat');
+
+load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
 
 try
     

@@ -1,7 +1,7 @@
 function [linInput] = luminanceToRgb(lumRequired, bitsRes, pathToGreydata)
 
 if nargin<3  
-    pathToGreydata='.\Utils\luminance\NecsusNolightGray-rgblum11-Dec-2018.mat';
+    pathToGreydata=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
     %'Common\LCD_linear_Acromatic_grey_data.mat';
 end
 
