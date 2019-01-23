@@ -9,18 +9,18 @@ load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
 try
     
     % Transform luminance required to rgb input.
-    rgbInput=luminanceToRgb(ptb.backgroundLum) 
+    rgbInput=luminanceToRgb(ptb.backgroundLum)
     
     % --- PTB setup ---
     Priority(2); % Set "real time priority level".
     %[window,~]=Screen('OpenWindow', ptb.screenNumber); % Open PTB full-screen window.
     
-
+    
     
     % --- START DISPLAY ---
     
     % Open a screen window.
-    [window, windowRect]=Screen('OpenWindow',...
+    [wScreen, windowRect]=Screen('OpenWindow',...
         ptb.screenNumber,...
         [round(rgbInput*255),round(rgbInput*255),round(rgbInput*255)],... % Background RGB values.
         [],...
@@ -32,8 +32,8 @@ try
     % MONITOR SETUP / Linearize monitor gamma.
     % upload inverse gamma function to screen - linearize lum.
     originalCLUT=Screen('LoadNormalizedGammaTable',...
-        window,...
-        repmat(invertedCLUT, [3,1])' ); 
+        wScreen,...
+        repmat(invertedCLUT, [3,1])' );
     
     
     % Define white.
@@ -42,22 +42,22 @@ try
     [sCenter.xCenter, sCenter.yCenter]=RectCenter(windowRect);
     
     % Get the size of the on screen window.
-    [lcd.screenXpixels, lcd.screenYpixels]=Screen('WindowSize', window);
+    [lcd.screenXpixels, lcd.screenYpixels]=Screen('WindowSize', wScreen);
     
     % Set the text size.
-    Screen('TextSize', window, 50);
+    Screen('TextSize', wScreen, 50);
     
     % Fixation cross.
     fCross=designFixationCross();
     
     % Hide cursor.
-    HideCursor;
+    % % %     HideCursor;
     
     % --- STIMULUS PARAMETER SETUP ---
-    stim=stimulusDefinition(lcd, gabor, window);
+    stim=stimulusDefinition(lcd, gabor, wScreen);
     
     % Build a procedural gabor texture - PTB3
-    gabor.gabortex = CreateProceduralGabor(window,...
+    gabortex = CreateProceduralGabor(wScreen,...
         stim.gaborDimPix,...
         stim.gaborDimPix,...
         0,...
@@ -74,19 +74,19 @@ try
     % Display fixation cross in the center of the screen and wait for
     % keyboard key press to start countdown (5 to 1 with 0.5
     % sec interval).
-    DrawFormattedText(window,'press any key.','center','center',white);
-    Screen('Flip',window); % Flip to the screen.
+    DrawFormattedText(wScreen,'press any key.','center','center',white);
+    Screen('Flip',wScreen); % Flip to the screen.
     KbStrokeWait;
     
     % Present countdown.
     for countDownIdx = 1:numel(stim.countDownVals)
         % Display number countDown.
-        DrawFormattedText(window,...
+        DrawFormattedText(wScreen,...
             stim.countDownVals{countDownIdx},...
             'center',...
             'center',...
             white);
-        Screen('Flip',window); % Flip to the screen.
+        Screen('Flip',wScreen); % Flip to the screen.
         WaitSecs(1);
     end
     
@@ -97,6 +97,8 @@ try
         % Get next contrast based on the method selected.
         methodStruct=getNextTrial(methodStruct);
         
+        fprintf('next trial contrast: %f. \n', methodStruct.contrastTrial)
+        
         % Present fixation cross.
         
         % Chrono.
@@ -104,47 +106,58 @@ try
         
         % Change the blend function to draw an antialiased fixation
         % point in the centre of the screen.
-        Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
-
+        Screen('BlendFunction', wScreen, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+        
         % Draw the fixation cross.
         Screen('DrawLines',...
-            window,...
+            wScreen,...
             fCross.CrossCoords,...
             fCross.lineWidthPix,...
             white,...
             [sCenter.xCenter sCenter.yCenter]);
         
         % Flip to the screen.
-        Screen('Flip', window);
+        Screen('Flip', wScreen);
         
         % Wait until fixation cross period ends.
         WaitSecs( (time.fCrossPres(methodStruct.trialIdx)+stim.isiDurationSecs) - GetSecs );
-                
+        
         
         % Present Gabor.
         % Chrono.
         time.stimPres(methodStruct.trialIdx)=GetSecs;
-       
+        
         % Set the right blend function for drawing the gabors.
-        Screen('BlendFunction', window, 'GL_ONE', 'GL_ZERO');
-
+        Screen('BlendFunction', wScreen, 'GL_ONE', 'GL_ZERO');
+        
         % Draw the Gabor.
-        Screen('DrawTexture', window, gabor.gabortex, [], [], gabor.angle, [], [], ...
+        Screen('DrawTexture', wScreen, gabortex, [], [], gabor.angle, [], [], ...
             [], [], kPsychDontDoRotation, [gabor.phase+180, gabor.desiredSF, stim.sigma, methodStruct.contrastTrial, gabor.aspectratio, 0, 0, 0]);
-       
+        
         % Flip to the screen.
-        Screen('Flip', window);
+        Screen('Flip', wScreen);
         
         % Wait until stim presentation period ends.
-        WaitSecs( (time.fCrossPres(methodStruct.trialIdx)+stim.stimDurationSecs) - GetSecs );
-             
+        WaitSecs( (time.stimPres(methodStruct.trialIdx)+stim.stimDurationSecs) - GetSecs );
+        
+        % Draw the fixation cross.
+        Screen('DrawLines',...
+            wScreen,...
+            fCross.CrossCoords,...
+            fCross.lineWidthPix,...
+            white,...
+            [sCenter.xCenter sCenter.yCenter]);
+        
+        % Flip to the screen.
+        Screen('Flip', wScreen);
+        
         % Now we wait for a keyboard button signaling the observers response.
         % The 'm' key signals a positive response
         %   (the participaant saw the stimuli)
         % and the 'z' key a negative response
         %   (the participant was not able to see the stimuli).
         % You can also press escape if you want to exit the program.
-             
+        
         hasResponse=false;
         
         while ~hasResponse
@@ -161,9 +174,9 @@ try
                     1];
                 
                 % Update estimation models.
-                methodStruct=updateEstimate(methodStruct,1); 
-               
-            % Else, if participant did not saw gabor, then.  
+                methodStruct=updateEstimate(methodStruct,1);
+                
+                % Else, if participant did not saw gabor, then.
             elseif keyCode(stim.keyNotView)
                 hasResponse = true;
                 
@@ -172,10 +185,10 @@ try
                     methodStruct.contrastTrial,...
                     0];
                 % Update estimation models.
-             	methodStruct=updateEstimate(methodStruct,0); 
+                methodStruct=updateEstimate(methodStruct,0);
                 
-            % Exit program if escape key is pressed.
-            elseif keyCode(stim.escapekey) 
+                % Exit program if escape key is pressed.
+            elseif keyCode(stim.escapekey)
                 hasResponse = true;
                 methodStruct.isComplete=1;
                 fprintf('The participant pressed the escape key.\n');
@@ -191,7 +204,7 @@ try
     fprintf('The experiment is finished.\n');
     fprintf('Closing setup.\n');
     % Restore originalCLUT.
-    Screen('LoadNormalizedGammatable', window, originalCLUT);
+    Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;
@@ -201,8 +214,12 @@ try
     
 catch me
     warning(me.message);
+    
     % Restore originalCLUT.
-    Screen('LoadNormalizedGammatable', window, originalCLUT);
+    if exist wScreen
+        Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
+    end
+    
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;

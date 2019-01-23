@@ -101,8 +101,8 @@ try
     
     
     % Get Spatial Frequency (cycles Per Pixel) and  gabor dimensions
-    [SF] = getSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF);
-    [gaborDimPix] = getGaborDimPix(screenWidth,screenXpixels,viewingDistance,gaborDimDegree);
+    [SF] = computeSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF);
+    [gaborDimPix] = computeGaborDimPix(screenWidth,screenXpixels,viewingDistance,gaborDimDegree);
     
     % Sigma of Gaussian
     sigma = gaborDimPix /7;
