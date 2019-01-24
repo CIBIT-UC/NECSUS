@@ -1,1 +1,1 @@
-[ results ] = getThreshold(responseMatrix)
+[ results ] = computeThreshold(responseMatrix)
