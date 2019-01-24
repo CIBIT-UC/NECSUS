@@ -1,4 +1,4 @@
-function [ results ] = getThreshold(answers)
+function [ results ] = computeThreshold(answers)
 
 % --- ORGANIZE DATA ---
 
@@ -52,7 +52,7 @@ numIterations=2000; % Number of bootstrap iterations
 results.threshold=threshold_slope( pfit, xfit, 0.5);
 results.nearThreshold=threshold_slope( pfit, xfit, 0.75);
 
-% plot data point and fitted curve
+% --- plot data point and fitted curve ---
 figure(1)
 plot(uniqueAnswers',percentageCorrectAnswers,'r.');
 hold on, plot( xfit, pfit*100, 'b' );

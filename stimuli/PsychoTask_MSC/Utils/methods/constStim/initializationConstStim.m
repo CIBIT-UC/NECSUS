@@ -9,9 +9,9 @@ constStimStruct=struct(); % Init struct.
 constStimStruct.name="ConstantStimuli";
 
 % Create a vector with values of contrast (10? samples).
-constStimStruct.min=2;
-constStimStruct.max=6;
-constStimStruct.step=2;
+constStimStruct.min=1;
+constStimStruct.max=10;
+constStimStruct.step=1;
 
 constStimStruct.repeats=1;
 

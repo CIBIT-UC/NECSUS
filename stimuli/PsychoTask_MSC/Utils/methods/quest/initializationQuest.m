@@ -13,10 +13,11 @@ questStruct.estMean=6.2980;
 questStruct.estStd=4.3992;
 
 % QUEST parameters
-questStruct.CsfScale=0:.3:60;
 questStruct.deltInt=.15;
-questStruct.init=6;
 questStruct.direction=0;
+
+questStruct.trialIdx=1;
+questStruct.init=6;
 questStruct.last=questStruct.init;
 
 % Watson AB, Pelli DG (1983) Quest: A Bayesian adaptive psychometric method. Percept Psychophys 33:113–120.

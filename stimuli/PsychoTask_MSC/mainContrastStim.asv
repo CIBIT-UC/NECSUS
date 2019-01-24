@@ -19,7 +19,7 @@ addpath(genpath('Utils'));
 
 PARTICIPANTNAME=input('Participant Code:','s'); % participant's code
 
-METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
+METHOD='ConstantStimuli'; %'QUEST' | 'ConstantStimuli' | ??
 
 SPATIALFREQ=3.5; % input('SF (3.5/10)?:','s'); % desired spatial frequency
 HASGLARE=0; % input('glare/noglare?:','s'); % glare setup
@@ -64,7 +64,7 @@ ptb.backgroundLum=BACKGROUNDLUM;
 %% Results analysis
 
 % --- Threshold estimation ---
-[results]=computeThreshold(responseMatrix);
+[results]=computeThreshold(respMatrix);
 % data regarding method.
 results.method=METHOD;
 results.SPATIALFREQ=3.5; 
@@ -74,12 +74,12 @@ results.BACKGROUNDLUM=20;
 %% Save data
 
 % save responseMatrix
-responseFileName=sprintf('%s_%s_%s_%i_answers',PARTICIPANTNAME,string(SPATIALFREQ),METHOD,HASGLARE);
+responseFileName=sprintf('%s_%s_%i_answers',PARTICIPANTNAME,string(SPATIALFREQ),HASGLARE);
 responseFilePathName=fullfile(pwd,'Answers',[responseFileName '.mat']);
 save(responseFilePathName,'responseMatrix','timesLog');
 
 % Save Results.
-resultsFileName=sprintf('%s_%s_%s_%i_results',PARTICIPANTNAME,string(SPATIALFREQ),METHOD,HASGLARE);
+resultsFileName=sprintf('%s_%s_%i_results',PARTICIPANTNAME,string(SPATIALFREQ),HASGLARE);
 resultsFilePathName=fullfile(pwd,'Results',[resultsFileName '.mat']);
-save(resultsFilePathName,'results');
+save(fileNamePath,'results');
 

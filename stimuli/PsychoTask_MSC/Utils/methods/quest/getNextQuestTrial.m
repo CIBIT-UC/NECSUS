@@ -14,17 +14,11 @@ fprintf('Value of QUEST mean %f and sd %f.\n',t,sd);
 % tTest=QuestMean(q)		% Recommended by King-Smith et al. (1994)
 % tTest=QuestMode(q);		% Recommended by Watson & Pelli (1983)
 
-[~,sortdIdxs]=sort( abs( t-questStruct.CsfScale ) );
-idx=sortdIdxs(1);
 
-if questStruct.CsfScale(sortdIdxs(1))==questStruct.last
-    idx=sortdIdxs(2);
-end
-
-fprintf('Next contrast test %f.\n', questStruct.CsfScale(idx) );
+fprintf('Next contrast test %f.\n', t );
 
 % Return and avoid repetition.
-questStruct.contrastTrial=questStruct.CsfScale(idx);
+questStruct.contrastTrial=t;
 
 questStruct.trialIdx=questStruct.trialIdx+1;
 

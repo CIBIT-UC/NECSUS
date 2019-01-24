@@ -7,6 +7,8 @@ else
     switch methodStruct.name
         case 'QUEST'
             methodStruct=getNextQuestTrial(methodStruct);
+        case 'QUESTFSS'
+            methodStruct=getNextQuestfssTrial(methodStruct);
         case 'ConstantStimuli'
             methodStruct=getNextConstStimTrial(methodStruct);
     end

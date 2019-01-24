@@ -1,4 +1,4 @@
-function quest = updateQuestEstimate( quest, response )
+function quest = updateQuestfssEstimate( quest, response )
 %updateQuestEstimate Summary of this function goes here
 %   Detailed explanation goes here
 
