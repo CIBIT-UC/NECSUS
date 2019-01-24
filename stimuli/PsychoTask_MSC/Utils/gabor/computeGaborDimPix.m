@@ -4,9 +4,9 @@ function [gaborDimPix] = computeGaborDimPix(screenWidth,screenXpixels,viewingDis
 %
 % 
 
-pixSize = screenWidth/screenXpixels; % Pixel sizecm/pix.
+pixSize=screenWidth/screenXpixels; % Pixel sizecm/pix.
 
-SizeCm = 2*viewingDistance*tan(pi*gaborDimDegree/(2*180)); % Dimension of gabor in cm.
+SizeCm=2*viewingDistance*tan(pi*gaborDimDegree/(2*180)); % Dimension of gabor in cm.
 
 gaborDimPix=round(SizeCm/pixSize); % Dimension of gabor in pixels.
 

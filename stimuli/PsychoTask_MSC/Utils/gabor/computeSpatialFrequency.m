@@ -8,7 +8,7 @@ function [spatFreq] = computeSpatialFrequency(screenHeight,screenYpixels,viewing
     PixelSize = screenHeight/screenYpixels;
     
     % This is the projetion of one degree on the screen (cm)
-    oneDegreeOnScreen = tan(pi/180)* viewingDistance ;
+    oneDegreeOnScreen = tan(pi/180)*viewingDistance ;
     
     % Number of pixels per degree
     pixelsInDegree = oneDegreeOnScreen/PixelSize;

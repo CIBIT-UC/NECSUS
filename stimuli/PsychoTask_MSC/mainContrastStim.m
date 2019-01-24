@@ -21,7 +21,7 @@ PARTICIPANTNAME=input('Name:','s'); % participant's name
 
 METHOD='ConstantStimuli'; %'QUEST' | 'ConstantStimuli' | ??
 
-SPATIALFREQ=10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
+SPATIALFREQ=3.5; % input('SF (3.5/10)?:','s'); % desired spatial frequency
 HASGLARE=0; % input('glare/noglare?:','s'); % glare setup
 BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
 

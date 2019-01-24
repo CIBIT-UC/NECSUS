@@ -9,11 +9,11 @@ constStimStruct=struct(); % Init struct.
 constStimStruct.name="ConstantStimuli";
 
 % Create a vector with values of contrast (10? samples).
-constStimStruct.min=20;
-constStimStruct.max=200;
-constStimStruct.step=20;
+constStimStruct.min=2;
+constStimStruct.max=6;
+constStimStruct.step=2;
 
-constStimStruct.repeats=20;
+constStimStruct.repeats=1;
 
 % Create stimuli and shuffle.
 constStimStruct.contrasts=constStimStruct.min:constStimStruct.step:constStimStruct.max;

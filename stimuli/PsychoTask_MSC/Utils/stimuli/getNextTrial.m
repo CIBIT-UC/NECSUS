@@ -1,12 +1,15 @@
-function [methodStruct] =  getNextTrial(methodStruct)
+function [methodStruct] =  getNextTrial(methodStruct, trialIdx)
 
-switch methodStruct.name
-    case 'QUEST'
-        methodStruct=getNextQuestTrial(methodStruct);
-    case 'ConstantStimuli'
-        methodStruct=getNextConstStimTrial(methodStruct);
+% If first trial return methodStruct.init else - getnexttrial
+if trialIdx==1
+    methodStruct.contrastTrial=methodStruct.init;
+else
+    switch methodStruct.name
+        case 'QUEST'
+            methodStruct=getNextQuestTrial(methodStruct);
+        case 'ConstantStimuli'
+            methodStruct=getNextConstStimTrial(methodStruct);
+    end
 end
-
-
 
 end
