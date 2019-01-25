@@ -216,7 +216,7 @@ try
             
             % Draw the Gabor
             Screen('DrawTexture', window, gabortex, [], [], angle, [], [], ...
-                [], [], kPsychDontDoRotation, [phase+180, SF, sigma, contrast, aspectratio, 0, 0, 0]);
+                [], [], kPsychDontDoRotation, [phase+180, SF, sigma, contrast, aspectratio, 0, 0, 0]');
             
             % Flip to the screen
             Screen('Flip', window);

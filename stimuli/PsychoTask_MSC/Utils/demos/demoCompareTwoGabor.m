@@ -49,7 +49,7 @@ try
     
     % get background RGB from gray monitor luminance response
     % bit resolution => 8
-    [normlzInput,Rb,Gb,Bb]=lumMatchRGBFinder(backGroundLum,8);
+    [normlzInput,Rb,Gb,Bb]=lum_match_RGBfinder(backGroundLum,8);
     
     % define white.
     white=WhiteIndex(screenNumber); % required to display fixation cross
@@ -68,8 +68,8 @@ try
     Screen('TextSize', window, 50);
     
     % Get Spatial Frequency (cycles Per Pixel) and  gabor dimensions
-    [SF] = getSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF);
-    [gaborDimPix] = getGaborDimPix(screenWidth,screenXpixels,viewingDistance,gaborDimDegree);
+    [SF] = computeSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF);
+    [gaborDimPix] = computeGaborDimPix(screenWidth,screenXpixels,viewingDistance,gaborDimDegree);
     
     % Sigma of Gaussian
     sigma = gaborDimPix /7;
