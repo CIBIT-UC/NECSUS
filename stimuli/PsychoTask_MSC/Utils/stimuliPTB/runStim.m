@@ -9,12 +9,11 @@ load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
 try
     
     % Transform luminance required to rgb input.
-    rgbInput=luminanceToRgb(ptb.backgroundLum)
+    rgbInput=luminanceToRgb(ptb.backgroundLum);
     
     % --- PTB setup ---
     Priority(2); % Set "real time priority level".
     %[window,~]=Screen('OpenWindow', ptb.screenNumber); % Open PTB full-screen window.
-    
     
     
     % --- START DISPLAY ---
@@ -51,17 +50,22 @@ try
     fCross=designFixationCross();
     
     % Hide cursor.
-    % % %     HideCursor;
+    HideCursor;
     
     % --- STIMULUS PARAMETER SETUP ---
     stim=stimulusDefinition(lcd, gabor, wScreen);
+    
+    disableNorm = [];
+    preContrastMultiplier = [];
     
     % Build a procedural gabor texture - PTB3
     gabortex = CreateProceduralGabor(wScreen,...
         stim.gaborDimPix,...
         stim.gaborDimPix,...
-        0,...
-        [rgbInput,rgbInput,rgbInput,0.0]);
+        [],...
+        [rgbInput,rgbInput,rgbInput,0.0],...
+        disableNorm,...
+        preContrastMultiplier);
     
     
     %-----------------------------------------------------------------%
@@ -92,17 +96,21 @@ try
     
     % --- Main loop ---
     
+    time.start=GetSecs;
+    trialIdx=0;
+    
     while ~methodStruct.isComplete
+        trialIdx=trialIdx+1;
         
         % Get next contrast based on the method selected.
-        methodStruct=getNextTrial(methodStruct);
+        methodStruct=getNextTrial(methodStruct, trialIdx);
         
         fprintf('next trial contrast: %f. \n', methodStruct.contrastTrial)
         
         % Present fixation cross.
         
         % Chrono.
-        time.fCrossPres(methodStruct.trialIdx)=GetSecs;
+        time.fCrossPres(trialIdx)=GetSecs-time.start;
         
         % Change the blend function to draw an antialiased fixation
         % point in the centre of the screen.
@@ -120,25 +128,25 @@ try
         Screen('Flip', wScreen);
         
         % Wait until fixation cross period ends.
-        WaitSecs( (time.fCrossPres(methodStruct.trialIdx)+stim.isiDurationSecs) - GetSecs );
+        WaitSecs( (time.fCrossPres(trialIdx)+stim.isiDurationSecs) - (GetSecs-time.start) );
         
         
         % Present Gabor.
         % Chrono.
-        time.stimPres(methodStruct.trialIdx)=GetSecs;
+        time.stimPres(trialIdx)=GetSecs-time.start;
         
         % Set the right blend function for drawing the gabors.
         Screen('BlendFunction', wScreen, 'GL_ONE', 'GL_ZERO');
         
         % Draw the Gabor.
-        Screen('DrawTexture', wScreen, gabortex, [], [], gabor.angle, [], [], ...
-            [], [], kPsychDontDoRotation, [gabor.phase+180, gabor.desiredSF, stim.sigma, methodStruct.contrastTrial, gabor.aspectratio, 0, 0, 0]);
+        Screen('DrawTextures', wScreen, gabortex, [], [], gabor.angle, [], [], ...
+            [], [], kPsychDontDoRotation, [gabor.phase+180, stim.spatFreq, stim.sigma, methodStruct.contrastTrial, gabor.aspectratio, 0, 0, 0]');
         
         % Flip to the screen.
         Screen('Flip', wScreen);
         
         % Wait until stim presentation period ends.
-        WaitSecs( (time.stimPres(methodStruct.trialIdx)+stim.stimDurationSecs) - GetSecs );
+        WaitSecs( (time.stimPres(trialIdx)+stim.stimDurationSecs) - (GetSecs-time.start) );
         
         % Draw the fixation cross.
         Screen('DrawLines',...
@@ -162,14 +170,15 @@ try
         
         while ~hasResponse
             % Check key pressed.
-            [~,time.respkeyPressed(methodStruct.trialIdx),keyCode] = KbCheck;
-            
+            [~,chronoKey,keyCode] = KbCheck;
+            % Time stamp of the answer.
+            time.respkeyPressed(trialIdx)=chronoKey-time.start;
             % If participant saw gabor, then.
             if keyCode(stim.keyView)
                 
                 hasResponse = true;
                 % Save results.
-                response(methodStruct.trialIdx,:) = [methodStruct.trialIdx,...
+                response(trialIdx,:) = [trialIdx,...
                     methodStruct.contrastTrial,...
                     1];
                 
@@ -181,7 +190,7 @@ try
                 hasResponse = true;
                 
                 % Save results.
-                response(methodStruct.trialIdx,:) = [methodStruct.trialIdx,...
+                response(trialIdx,:) = [trialIdx,...
                     methodStruct.contrastTrial,...
                     0];
                 % Update estimation models.
@@ -201,6 +210,8 @@ try
         % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
     end
     
+    time.finished=GetSecs-time.start;
+    
     fprintf('The experiment is finished.\n');
     fprintf('Closing setup.\n');
     % Restore originalCLUT.
@@ -216,9 +227,7 @@ catch me
     warning(me.message);
     
     % Restore originalCLUT.
-    if exist wScreen
-        Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
-    end
+    Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
     
     % Close PTB Screen.
     Screen('CloseAll');
