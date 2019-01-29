@@ -35,9 +35,7 @@ sd_thres = std (rAnalysis.T);
 
 fprintf('The mean is %.3f, maximum is %.3f and the minimum is %.3f \n', mean_thres, max_thres, min_thres)
 
-%%
-
-
+%% plotting tools
 
 questR=rAnalysis.T(strcmp(rAnalysis.METHOD,'QUEST'));
 csR=rAnalysis.T(strcmp(rAnalysis.METHOD,'ConstantStimuli'));
@@ -56,7 +54,6 @@ plot(csR(find(csR<7)), 'ro');
 plot(rAnalysis.NT(strcmp(rAnalysis.METHOD,'ConstantStimuli')), 'r.', 'MarkerSize', 20)
 
 legend({ 'Const Stim T','Const Stim NT'});
-
 
 
 figure(2)

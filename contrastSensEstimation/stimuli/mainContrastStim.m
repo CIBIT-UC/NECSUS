@@ -20,8 +20,8 @@ addpath(genpath('Utils'));
 PARTICIPANTNAME=input('Participant Code:','s'); % participant's code
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
-
-SPATIALFREQ=3.5; % input('SF (3.5/10)?:','s'); % desired spatial frequency
+VIEWINGDISTANCE=40; %150 | 40 (debug)
+SPATIALFREQ=10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
 HASGLARE=0; % input('glare/noglare?:','s'); % glare setup
 BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
 
@@ -32,7 +32,7 @@ respMatrix = [];
 KbName('UnifyKeyNames');
 
 % --- LCD monitor ---
-lcd=lcdInfo();
+lcd=lcdInfo(VIEWINGDISTANCE);
 
 % --- GABOR INFORMATION ---
 gabor=gaborInfo(SPATIALFREQ);
@@ -67,9 +67,9 @@ ptb.backgroundLum=BACKGROUNDLUM;
 [results]=computeThreshold(responseMatrix);
 % data regarding method.
 results.method=METHOD;
-results.SPATIALFREQ=3.5; 
-results.HASGLARE=0; 
-results.BACKGROUNDLUM=20; 
+results.SPATIALFREQ=SPATIALFREQ; 
+results.HASGLARE=HASGLARE; 
+results.BACKGROUNDLUM=BACKGROUNDLUM; 
 
 %% Save data
 
