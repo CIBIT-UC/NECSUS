@@ -8,14 +8,14 @@ function [ success ] = createDicomFolderStructure( datasetConfigs )
 %   created
 %
 % Version 1.0
-% - Overall restructure
+% - Overall restructure NECSUS
 %
 % Author: Bruno Direito (2018)
 
 %% Configs and presets
 success = false;
 
-% Get all the DICOM files available in the raw data folder from MR scanner
+% Get all the DICOM files available in the raw data folder from MR scanner.
 D = dir( fullfile(datasetConfigs.rawData,'*.ima') ); % .IMA extension
 
 % Check total number of required files in configs
@@ -25,16 +25,12 @@ elseif (length(D) < sum(datasetConfigs.volumes)) && (length(D) < 5)
     D = dir(fullfile(datasetConfigs.rawData,'*.dcm')); % .dcm extension
 end
 
-files = extractfield(D,'name')';
-
-% TODO / REVIEW: check if files OK before creating folders etc.
-%   example:  firstDCMfile = dicominfo(fullfile(D(1).folder,D(1).name));
-%             firstDCMfile.PatientID
-
+files = {D.name};
 
 %% identify number of runs in DICOM files
 % initialize series variable
 series = zeros(length(files),1);
+
 for i=1:length(files)
     % Get series number by filename token
     % (fourth token corresponds to the series)
@@ -44,17 +40,15 @@ end
 
 % unique (dicom) files series
 seriesNumbers = unique(series);
+
 % number of volumes per series
 seriesVolumes = hist(series,length(1:seriesNumbers(end)));
+
 % remove series numbers with zero elements
 seriesVolumes = seriesVolumes(seriesVolumes~=0);
 
 % get number of runs defined in the configs file
-nRuns = length(datasetConfigs.runs);
-
-% TODO / REVIEW: Double check number of runs and their size before continuing
-% example_ read infor of DICOM file from each run and ask user
-%       then proceed
+nRuns = datasetConfigs.nRuns;
 
 %% Check for incomplete runs or extra runs
 % Should allow for multiple anatomical scans, three pRF runs and four
@@ -205,7 +199,7 @@ if exist(sessFolder,'dir') == 7
 else
     mkdir(sessFolder)
 end
-
+%%
 % ---- Check and create a folder for each run ----
 % Run folder - session folder + data type
 

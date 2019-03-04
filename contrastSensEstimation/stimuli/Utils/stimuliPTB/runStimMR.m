@@ -1,4 +1,4 @@
-function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct )
+function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct, S )
 %RUNSTIM run stim based on preset variables
 
 % load gamma-corrected CLUT (color look-up table) - variable
@@ -6,26 +6,28 @@ function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct )
 
 load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
 
-% Transform luminance required to rgb input.
-rgbInput=luminanceToRgb(ptb.backgroundLum);
-
-% --- PTB setup ---
-Priority(2); % Set "real time priority level".
-%[window,~]=Screen('OpenWindow', ptb.screenNumber); % Open PTB full-screen window.
-
-% Open a screen window.
-[wScreen, windowRect]=Screen('OpenWindow',...
-    ptb.screenNumber,...
-    [round(rgbInput*255),round(rgbInput*255),round(rgbInput*255)],... % Background RGB values.
-    [],...
-    [],...
-    [],...
-    [],...
-    0);
-
-
-% --- START DISPLAY ---
 try
+    
+    % Transform luminance required to rgb input.
+    rgbInput=luminanceToRgb(ptb.backgroundLum);
+    
+    % --- PTB setup ---
+    Priority(2); % Set "real time priority level".
+    %[window,~]=Screen('OpenWindow', ptb.screenNumber); % Open PTB full-screen window.
+    
+    
+    % --- START DISPLAY ---
+    
+    % Open a screen window.
+    [wScreen, windowRect]=Screen('OpenWindow',...
+        ptb.screenNumber,...
+        [round(rgbInput*255),round(rgbInput*255),round(rgbInput*255)],... % Background RGB values.
+        [],...
+        [],...
+        [],...
+        [],...
+        0);
+    
     % MONITOR SETUP / Linearize monitor gamma.
     % upload inverse gamma function to screen - linearize lum.
     originalCLUT=Screen('LoadNormalizedGammaTable',...
@@ -167,42 +169,59 @@ try
         hasResponse=false;
         
         while ~hasResponse
-            % Check key pressed.
-            [~,chronoKey,keyCode] = KbCheck;
-            % Time stamp of the answer.
-            time.respkeyPressed(trialIdx)=chronoKey-time.start;
-            % If participant saw gabor, then.
-            if keyCode(stim.keyView)
+            % Check keyboard key pressed.
+            [keyPress,chronoKey,keyCode] = KbCheck;
+            
+            if keyPress
+                if keyCode(KbName('escape')) == 1 %Quit if "Esc" is pressed
+                    throw(MException('user:escape','Aborted by escape key.'))
+                end
+            end
+            
+            % Check for response box press.
+            [key,~] = IOPort('Read',S.response_box_handle);
+            
+            % If not empty then.
+            if ~isempty(key) && (length(key) == 1)
+                                                
+                % Time stamp of the answer.
+                time.respkeyPressed(trialIdx)=chronoKey-time.start;
                 
-                hasResponse = true;
-                % Save results.
-                response(trialIdx,:) = [trialIdx,...
-                    methodStruct.contrastTrial,...
-                    1];
+                % If participant saw gabor, then (check response box button pressed). 
                 
-                % Update estimation models.
-                methodStruct=updateEstimate(methodStruct,1);
                 
-                % Else, if participant did not saw gabor, then.
-            elseif keyCode(stim.keyNotView)
-                hasResponse = true;
                 
-                % Save results.
-                response(trialIdx,:) = [trialIdx,...
-                    methodStruct.contrastTrial,...
-                    0];
-                % Update estimation models.
-                methodStruct=updateEstimate(methodStruct,0);
-                
-                % Exit program if escape key is pressed.
-            elseif keyCode(stim.escapekey)
-                hasResponse = true;
-                methodStruct.isComplete=1;
-                fprintf('The participant pressed the escape key.\n');
-                break;
-                
+                %%%%%%%%%%%%%%%%%%%%%%TODO
+                if key == %VIU%
+                    
+                    hasResponse = true;
+                    % Save results.
+                    response(trialIdx,:) = [trialIdx,...
+                        methodStruct.contrastTrial,...
+                        1];
+                    
+                    % Update estimation models.
+                    methodStruct=updateEstimate(methodStruct,1);
+                    
+                    % Else, if participant did not saw gabor, then.
+                elseif key == %NAOVIU%
+                    hasResponse = true;
+                    
+                    % Save results.
+                    response(trialIdx,:) = [trialIdx,...
+                        methodStruct.contrastTrial,...
+                        0];
+                    % Update estimation models.
+                    methodStruct=updateEstimate(methodStruct,0);
+                    
+                end
+
+                %%%%%%%%%%%%%%%%%%%%%%TODO
             end
         end
+        
+        IOPort('Flush',S.response_box_handle);
+        
         
         methodStruct.last=methodStruct.contrastTrial;
         % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);

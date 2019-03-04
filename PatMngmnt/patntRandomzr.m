@@ -1,42 +1,61 @@
-% randomize patients and order of tasks
+% Randomize patients and order of tasks
+clear all
 
-nGroups=3; % different groups in the study (lenses type/Controls)
+% Presets.
+% Different groups in the study (lenses type, controls, etc.).
+nGroups=3;
+numElemtnsPerGroup=[11,12,10];
+groupDescriptions={'Controls','Monofocal lenses','Bifocal lenses'};
 
-nPatPerGroup=[11,12,10]; % number of patients per group (nGroups = numel(nPatPerGroup))
-groupDescrp={'group1','group2','group3'}; % description of each group
 
-totNumPats=sum(nPatPerGroup);
+%% Randomize
 
-% block randomization 
-% If the block size is four, we can make six possible sequences; 
+% Create struct.
+groups=struct();
+
+% Create each group.
+for i=1:nGroups
+    % Number of patients per group (i.e. nGroups = numel(nPatPerGroup))
+    groups(i).nElements=numElemtnsPerGroup(i);
+    % description of each group
+    groups(i).description=groupDescriptions{i};
+end
+
+% Total number of participants in the study.
+totNumPats=sum([groups.nElements]);
+
+% block randomization
+% If the block size is four, we can make six possible sequences;
 % these are AABB, ABAB, ABBA, BAAB, BABA, BBAA, and we randomize them.
+
+% A - with glare first and without glare second
+% B - without glare first and with glare second
 blockRandSize=4;
 blockTemplt={'A','B','A','B'};
 
-
-% randomize patients
+% Randomize patients.
 for g=1:nGroups
-    blockSeq{g}=[];
-    nPats=nPatPerGroup(g);
-        
-    nBlocks=floor(nPats/blockRandSize);
+    % sequence for
+    groups(g).blockSeq=[];
+   
+    nBlocks=floor(groups(g).nElements/blockRandSize);
     blockRem=nBlocks;
     
     % while block remaining do random
     while blockRem>0
         b=1:nBlocks;
         idxs=randperm(blockRandSize);
-        blockSeq{g}=[blockSeq{g} {blockTemplt{idxs}}];
+        groups(g).blockSeq=[groups(g).blockSeq {blockTemplt{idxs}}];
         blockRem = blockRem-1;
-    end 
-    remainder=rem(nPats,blockRandSize);
+    end
+    remainder=rem(groups(g).nElements,blockRandSize);
     
     if remainder
-         blockSeq{g}= [blockSeq{g} {blockTemplt{randperm(remainder)}}];
+        groups(g).blockSeq=[groups(g).blockSeq {blockTemplt{randperm(remainder)}}];
     end
-        
+    
 end % number of groups
 
 %%
 
-save patntRandzd blockSeq groupDescrp nPatPerGroup
+save patntRandzd groups

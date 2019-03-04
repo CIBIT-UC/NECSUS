@@ -12,43 +12,51 @@
 % Version 1.0 (adapted to NECSUS)
 % - Overall restructure
 
-%% Clear Command Window / Clear Workspace / Close / Add Paths
+%% Clear Command Window / Clear Workspace / Close / Add Paths.
 clear , clc , close all;
 
 addpath functions utils
 
-%% Load config file 
+%% Load config file.
 
 load('Configs_NECSUS.mat')
 
-%% Set configs and presets 
+%% Set configs.
 
-% Participant config
-
-% Participant's name
-subjectName = 'sub-01'; 
-% Session's name
+% Participant's name.
+subjectName = 'sub-UC01'; 
+% Session's name.
 sessionName = 'ses-01';
-% identify ID of participant in configs file
+% Identify ID of participant in configs file.
 subjectIndex = find(not(cellfun('isempty', strfind(datasetConfigs.subjects, subjectName))));
-% if error stop and correctly identify the participant
+
+% 1 - anat; 2 - func;
+subjectDataTypeOrder=[1,2,2,2,2,2,1,2,2];
+% 1 - T1w; 2 - retinotopy; 3 - Glare; 4 - NoGlare;
+subjectRunsOrder=[1,2,2,2,3,3,1,4,4];
+
+% Identify the participant in configs.
 if isempty(subjectIndex)
     error('Invalid Subject Name')
 end
 
-% else - proceed
-datasetConfigs.subjectCode = subjectName; %changed var name
-datasetConfigs.sessionCode = sessionName;% change session name
-datasetConfigs.rawData = 'C:\Users\Bruno\Desktop\NECSUS\data\Raw\ALZIRAQUATORZE'; %changed var name
+%% Complete datasetConfigs variable.
+datasetConfigs.subjectCode = subjectName; 
+datasetConfigs.sessionCode = sessionName;
+datasetConfigs.subjectDataTypeOrder=subjectDataTypeOrder;
+datasetConfigs.subjectRunsOrder=subjectRunsOrder;
 
+datasetConfigs.rawData = 'C:\Users\bdireito\Data\NECSUS-Raw\ALZIRAQUATORZE'; 
+
+%% Set preprocessing presets.
 % Automatic IIHC
 performIIHC = 0;              
 % Automatic TAL Transformation
 performATAL = 0;              
 % Automatic MNI Transformation
-performAMNI = 0;             
+performAMNI = 1;             
 % Manual TAL Transformation
-performMTAL = 1;             
+performMTAL = 0;             
 % Include motion parameters in SDM
 motionParameters = 1;  
 % Spike Threshold

@@ -10,53 +10,41 @@
 %% configuration and presets
 datasetConfigs = struct();
 
-% participant ID
+% Participant ID.
 datasetConfigs.subjects = {
-    'sub-01', 'sub-02', 'sub-03'
+    'sub-UC01', 'sub-UC02', 'sub-UC03'
     };
-% session ID
+
+% Session ID.
 datasetConfigs.sessions = {
     'ses-01', 'ses-02'
     };
 
-% anat or func (according to BIDS structure)
-datasetConfigs.folders = {  
-    'anat','func','func',...
-    'func','func','func',...
-    'anat','func','func'
+% Anat or func (according to BIDS structure).
+datasetConfigs.dataTypes = {
+    'anat','func'
     };
 
-% run description (and folder name)
-datasetConfigs.subfolders = {
-    'MPRAGE_p2_1mm_iso_run1',...
-    'retinotopia_8bar_Run1',...
-    'retinotopia_8bar_Run2',...
-    'retinotopia_8bar_Run3',...
-    'Glare_Run1',...
-    'Glare_Run2',...
-    'MPRAGE_p2_1mm_iso_run2',...
-    'NoGlare_Run1',...
-    'NoGlare_Run2',...
+% Run description (and folder name).
+datasetConfigs.task = {
+    'T1w',...
+    'retinotopia-8bar',...
+    'glare',...
+    'noglare',...
     };
 
-% ------------ TODO ------------------
-% datasetConfigs.prtPrefix = {'DanielaNF_nBackTask315v1back','DanielaNF195v','DanielaNF195v','DanielaNF195v','DanielaNF195v','DanielaNF195v'};
+% Volumes per run.
+datasetConfigs.volumes=[176, 180, 177, 177];
 
-% complete path to run
-for i = 1:numel(datasetConfigs.folders)
-    % create path to data
-    datasetConfigs.runs{i} = fullfile(datasetConfigs.folders{i}, datasetConfigs.subfolders{i});
-end
+% Total number of runs.
+datasetConfigs.nRuns=9;
 
-%% MRI data specifications per run
-% volumes per run
-datasetConfigs.volumes = [176, 180, 180, 180, 177, 177, 176, 177, 177];
 % fMRI repetition time
 datasetConfigs.TR = 2000;
 
 %% processed data destination folders
-datasetConfigs.path = 'C:\Users\Bruno\Desktop\NECSUS\source_code\datastructure\';
-datasetConfigs.project_name = 'necsus';
+datasetConfigs.path = 'C:\Users\bdireito\Data\';
+datasetConfigs.project_name = 'NECSUS';
 datasetConfigs.analysis_path = 'ANALYSIS';
 
 %% save config file

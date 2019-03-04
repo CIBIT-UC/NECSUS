@@ -37,11 +37,19 @@ lcd=lcdInfo(VIEWINGDISTANCE);
 % --- GABOR INFORMATION ---
 gabor=gaborInfo(SPATIALFREQ);
 
+% --- RESPONSE BOX at MRScanner
+S.RSPBOX=1;
 
 %% INITIALIZE
 
 % --- init method struct ---
 methodStruct=methodInitialization(METHOD);
+
+%% --- Open COM port for the Response Box
+if S.RSPBOX
+    S.response_box_handle = IOPort('OpenSerialPort','COM3');
+    IOPort('Purge',S.response_box_handle);
+end
 
 
 %% STIMULI presentation
@@ -53,13 +61,13 @@ syncTrick(); % Run sync trick proposed by PTB dev.
 ptb.screens=Screen('Screens');
 
 % Draw to the external screen if avaliable
-ptb.screenNumber=1;
+ptb.screenNumber=2;% max(ptb.screens);
 
 ptb.backgroundLum=BACKGROUNDLUM;
 
 %% RUN stimuli
 
-[responseMatrix,timesLog]=runStim(ptb, lcd, gabor, methodStruct);
+[responseMatrix,timesLog]=runStimMR(ptb, lcd, gabor, methodStruct, S);
 
 %% Results analysis
 
