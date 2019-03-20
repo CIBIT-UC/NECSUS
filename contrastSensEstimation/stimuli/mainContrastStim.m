@@ -20,7 +20,7 @@ addpath(genpath('Utils'));
 PARTICIPANTNAME=input('Participant Code:','s'); % participant's code
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
-VIEWINGDISTANCE=150; %150 | 40 (debug)
+VIEWINGDISTANCE=40; %150 | 40 (debug)
 SPATIALFREQ=10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
 HASGLARE=0; % input('glare/noglare?:','s'); % glare setup
 BACKGROUNDLUM=20; % Luminance background required 20 cd/m2

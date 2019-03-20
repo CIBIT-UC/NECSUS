@@ -53,8 +53,8 @@ questStruct.q.normalizePdf=1;
 % stopping handle.
 questStruct.isComplete=0;
 % Stopping criteria (total number of trials tried).
-questStruct.nTrials=50;
+questStruct.nTrials=100;
 % Stopping criteria (i.e. sd=QuestSd(.q) less than ?).
-questStruct.sCrit=0.25;
+questStruct.sCrit=0.15;
 
 end
