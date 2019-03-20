@@ -12,7 +12,7 @@ datasetConfigs = struct();
 
 % Participant ID.
 datasetConfigs.subjects = {
-    'sub-UC01', 'sub-UC02', 'sub-UC03'
+    'sub-NECSUS-UC01', 'sub-NECSUS-UC02', 'sub-NECSUS-UC03'
     };
 
 % Session ID.
@@ -42,10 +42,14 @@ datasetConfigs.nRuns=9;
 % fMRI repetition time
 datasetConfigs.TR = 2000;
 
+datasetConfigs.volsToSkip=6;
+
 %% processed data destination folders
 datasetConfigs.path = 'C:\Users\bdireito\Data\';
 datasetConfigs.project_name = 'NECSUS';
 datasetConfigs.analysis_path = 'ANALYSIS';
+
+
 
 %% save config file
 save('Configs_NECSUS.mat','datasetConfigs')

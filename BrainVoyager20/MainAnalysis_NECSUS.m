@@ -24,7 +24,7 @@ load('Configs_NECSUS.mat')
 %% Set configs.
 
 % Participant's name.
-subjectName = 'sub-UC01'; 
+subjectName = 'sub-NECSUS-UC01'; 
 % Session's name.
 sessionName = 'ses-01';
 % Identify ID of participant in configs file.
@@ -41,8 +41,8 @@ if isempty(subjectIndex)
 end
 
 %% Complete datasetConfigs variable.
-datasetConfigs.subjectCode = subjectName; 
-datasetConfigs.sessionCode = sessionName;
+datasetConfigs.subjectCode=subjectName; 
+datasetConfigs.sessionCode=sessionName;
 datasetConfigs.subjectDataTypeOrder=subjectDataTypeOrder;
 datasetConfigs.subjectRunsOrder=subjectRunsOrder;
 
@@ -50,11 +50,11 @@ datasetConfigs.rawData = 'C:\Users\bdireito\Data\NECSUS-Raw\ALZIRAQUATORZE';
 
 %% Set preprocessing presets.
 % Automatic IIHC
-performIIHC = 0;              
+performIIHC = 1;              
 % Automatic TAL Transformation
-performATAL = 0;              
+performATAL = 1;              
 % Automatic MNI Transformation
-performAMNI = 1;             
+performAMNI = 0;             
 % Manual TAL Transformation
 performMTAL = 0;             
 % Include motion parameters in SDM
@@ -74,12 +74,11 @@ assert(success,'Folder creation aborted.');
 clear dataPath dataTBV;
 
 
-%TODO - -BD 24/10
 %% -- Initialize
 
-configs = struct(); % Settings Structure
+configs=struct(); % Settings Structure
 
-configs.dataRoot = fullfile ( datasetConfigs.root_dir, datasetConfigs.project_name );
+configs.dataRoot=fullfile(datasetConfigs.path, datasetConfigs.project_name);
 addpath(configs.dataRoot);
 
 % Initialize COM
@@ -101,7 +100,7 @@ configs.MTAL = performMTAL;
 configs.alignRun = alignRun;
 configs.BBR = performBBR;
 
-configs.vol_to_skip =  datasetConfigs.volumes_func_to_skip;
+configs.volToSkip=datasetConfigs.volsToSkip;
 
 % Account for user error
 if configs.ATAL && configs.MTAL
