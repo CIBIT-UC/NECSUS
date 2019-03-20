@@ -1,4 +1,4 @@
-function [ vmrProject ] = createVmrProject( configs, run_path, vmr_num )
+function [ vmrProject ] = createVmrProject( configs, projectPath, vmrIdx )
 %CREATEVMR Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -9,12 +9,12 @@ disp('Creating VMR Project...');
 % -----------------------
 
 % Set folder containing anat. data
-pathfiles = fullfile(configs.dataRootSubject, run_path, 'DATA');
-files = dir( fullfile ( pathfiles, '*.dcm' ) );
+pathfiles=fullfile(projectPath, 'DATA');
+files=dir(fullfile(pathfiles,'*.dcm'));
 
 % files previously transformed to .dcm
-firstFileName = fullfile( configs.dataRootSubject, run_path, 'DATA',files(1).name );
-[~,~,ext] = fileparts(firstFileName);
+firstFileName=fullfile(projectPath,'DATA',files(1).name);
+[~,~,ext]=fileparts(firstFileName);
 
 switch ext
     case '.dcm', filetype = 'DICOM';
@@ -25,8 +25,8 @@ switch ext
     case '.hdr', filetype = 'ANALYZE';
 end
 
-if ( strcmp( ext, '.dcm' ) == 1) && ( exist( 'dicominfo.m' ) > 0 )
-    dcminfo = dicominfo( firstFileName );
+if (strcmp(ext,'.dcm')==1) && (exist('dicominfo.m')>0)
+    dcminfo=dicominfo( firstFileName );
     bytesperpixel = ( dcminfo.BitsAllocated/8 );
     xres = dcminfo.Columns;
     yres = dcminfo.Rows;
@@ -41,12 +41,12 @@ else
     bytesperpixel = answer{ 3 };
 end
 
-rawFileSelection = fullfile( pathfiles , [ '*' ext ] );
-files = dir( rawFileSelection );
-sizeAr = size( files );
-nrSlices = sizeAr( 1 );
+rawFileSelection=fullfile(pathfiles,[ '*' ext ]);
+files=dir(rawFileSelection);
+sizeAr=size(files);
+nrSlices=sizeAr(1);
 
-swap = 0;
+swap=0;
 
 vmrProject = configs.bvqx.CreateProjectVMR(...
     filetype,...
@@ -58,10 +58,9 @@ vmrProject = configs.bvqx.CreateProjectVMR(...
     bytesperpixel);
 
 vmrProject.SaveAs( fullfile ...
-    ( configs.dataRootSubject,...
-    run_path,...
+    (projectPath,...
     'PROJECT',...
-    [configs.filesSignature '_T1w_' num2str(vmr_num) '.vmr']));
+    [configs.filesSignature '_run_' num2str(vmrIdx) '_T1w.vmr']));
 
 %% TRANSFORMATIONS
 % Perform inhomogeneity correction and transform VMR to AC-PC and Talairach space

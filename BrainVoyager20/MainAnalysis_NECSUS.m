@@ -24,7 +24,7 @@ load('Configs_NECSUS.mat')
 %% Set configs.
 
 % Participant's name.
-subjectName = 'sub-NECSUS-UC01'; 
+subjectName = 'sub-NECSUS-UC01';
 % Session's name.
 sessionName = 'ses-01';
 % Identify ID of participant in configs file.
@@ -41,30 +41,30 @@ if isempty(subjectIndex)
 end
 
 %% Complete datasetConfigs variable.
-datasetConfigs.subjectCode=subjectName; 
+datasetConfigs.subjectCode=subjectName;
 datasetConfigs.sessionCode=sessionName;
 datasetConfigs.subjectDataTypeOrder=subjectDataTypeOrder;
 datasetConfigs.subjectRunsOrder=subjectRunsOrder;
 
-datasetConfigs.rawData = 'C:\Users\bdireito\Data\NECSUS-Raw\ALZIRAQUATORZE'; 
+datasetConfigs.rawData = 'C:\Users\bdireito\Data\NECSUS-Raw\ALZIRAQUATORZE';
 
 %% Set preprocessing presets.
 % Automatic IIHC
-performIIHC = 1;              
+performIIHC = 1;
 % Automatic TAL Transformation
-performATAL = 1;              
+performATAL = 1;
 % Automatic MNI Transformation
-performAMNI = 0;             
+performAMNI = 0;
 % Manual TAL Transformation
-performMTAL = 0;             
+performMTAL = 0;
 % Include motion parameters in SDM
-motionParameters = 1;  
+motionParameters = 1;
 % Spike Threshold
-spikeThreshold = 0.25;        
+spikeThreshold = 0.25;
 % Run to align motion correction
-alignRun = '';                
+alignRun = '';
 % Use BBR coregistration
-performBBR = 1;               
+performBBR = 1;
 
 
 %% -- Create Folder Structure
@@ -88,7 +88,9 @@ configs.bvqx = actxserver('BrainVoyager.BrainVoyagerScriptAccess.1');
 configs.filesSignature = datasetConfigs.subjects{subjectIndex};
 configs.subjectName = datasetConfigs.subjects{subjectIndex};
 
-configs.dataRootSubject = fullfile(configs.dataRoot, configs.subjectName);
+configs.dataRootSubject=fullfile(configs.dataRoot, configs.subjectName);
+configs.dataRootSession=fullfile(configs.dataRootSubject, datasetConfigs.sessionCode);
+
 
 configs.firstFunctRunIdx = [];
 configs.firstFunctRunName = [];
@@ -123,57 +125,51 @@ clear performIIHC performATAL performAMNI performMTAL
 % Check for multiple anatomical runs
 % -----
 
-vmr_num = 1;
 
-configs.anatRun = [];
+configs.anatProjects = [];
 
+% Check number of folder in anat folder of the subject/ses
+anatProjects=dir(fullfile(configs.dataRootSession,'anat'));
+% Remove '.', '..' from struct.
+anatProjects(1:2)=[];
 
 % Iterate through all runs in config.
-for run_idx = 1:numel(datasetConfigs.runs)   
+for vmrProjectIdx=1:numel(anatProjects)
     
-    % Check if run is anatomical
-    if datasetConfigs.folders{run_idx} == 'anat'       
-        configs.anatRun = run_idx; 
-        configs.anatRunIdx = run_idx; 
-        configs.anatRunName = datasetConfigs.runs{run_idx};   
-    end
-end
-
-% % if numel( configs.anat_runs ) > 1 
-% %    fprint ("-- too many anat runs. Please check selection. \n") 
-% %     
-% % end
-
-
-%%
-% Iterate through all runs in config.
-for run_idx = 1:numel(configs.anatRun)
+    % Create structure for anatomical projects id.
+    configs.anatProjects(vmrProjectIdx).name=anatProjects(vmrProjectIdx).name;
     
-    % anat runs: anat_runs(run_idx)
+    % Temporary folder path to project and data.
+    projectPath=fullfile( configs.dataRootSession,...
+            'anat', ...
+            configs.anatProjects(vmrProjectIdx).name);
+    projectDataPath=fullfile( configs.dataRootSession,...
+            'anat', ...
+            configs.anatProjects(vmrProjectIdx).name, ...
+            'DATA' );
     
-    % Check for .IMA files
-    anatFiles = dir( fullfile( configs.dataRoot, ...
-        configs.subjectName, ...
-        datasetConfigs.runs{configs.anatRun}, ...
-        'DATA', ...
-        '*.IMA' ) );
-    
-    % If previously renamed do nothing
-    if ~isempty(anatFiles)
-        renameDirectoryDcm( fullfile( configs.dataRoot, ...
-            configs.subjectName, ...
-            datasetConfigs.runs{configs.anatRun(run_idx)}, ...
-            'DATA', ...
-            anatFiles(1).name ) );
+    % Check for .IMA files and transform to DICOM if necessary.
+    anatProjectFiles = dir( fullfile( projectDataPath, ...
+        '*.IMA'));
+    % If previously renamed do not perform operation.
+    if ~isempty(anatProjectFiles)
+        configs.bvqx.RenameDicomFilesInDirectory(projectDataPath);
     end
     
-    % Create VMR project
+    % Anonimizing data.
+    % First argument %path% and second the %name%
+    configs.bvqx.AnonymizeDicomFilesInDirectory(projectDataPath, configs.subjectName);
+    
+    % Create VMR project and perform initial transformations - ACPC and TAL.
     kInputBool = false;
     while ~kInputBool
-        configs.vmrProject = createVmrProject( configs, datasetConfigs.runs{configs.anatRun(run_idx)}, vmr_num );
         
-        vmr_num = vmr_num + 1;
+        % Create vmr project.
+        configs.vmrProject = createVmrProject( configs,...
+            projectPath,...
+            vmrProjectIdx );
         
+        % ACPC rotation and TAL transformation.
         if configs.ATAL
             disp('---> Check automatic TAL Transformation!')
             
@@ -200,19 +196,37 @@ for run_idx = 1:numel(configs.anatRun)
         end
     end
     
-    configs.anatRun = datasetConfigs.runs{configs.anatRun(run_idx)};
+%     configs.anatRun = datasetConfigs.runs{configs.anatRun(run_idx)};
     
+end
+
+%% Combine volumes - create average vmr file
+% Create average vmr
+fprintf('\n-- Combine 3D datasets using the BV interface. \n');
+
+averageVmrProjectPath=fullfile(anatProjects(1).folder,...
+            anatProjects(1).name,...
+            'PROJECT',...
+            [configs.filesSignature '_run-average_T1w_IIHC.vmr']);
+        
+if ~exist(averageVmrProjectPath,'file')
+    % Ask to create average vmr or check for error.
+    fprinf('[WARNING] Is the file %s created?\n', averageVmrProjectPath)
+else
+    % Perform TAL transformation.
+    vmrProjectNormalization(configs,averageVmrProjectPath)
 end
 
 %% -- Functional Project Preparation
 
+fprintf('\n-- Create functional projects. \n');
 % -----
 % Check for multiple functional runs
 % -----
 
 functionalRuns = datasetConfigs.subfolders(find(strcmp (datasetConfigs.folders,'func')))';
 
- 
+
 % % functionalRuns = ( dir ( fullfile( configs.dataRootSubject, 'func' ) ) );
 % % idx_f = [functionalRuns(:).isdir]; %# returns logical vector
 % % functionalRuns = {functionalRuns(idx_f).name}';
@@ -227,7 +241,7 @@ sliceVector = cell(numFunctionalRuns);
 
 for f = 1 : numFunctionalRuns
     
- 
+    
     % Rename DICOM
     functFiles = dir( fullfile( configs.dataRoot, ...
         configs.subjectName, ...
@@ -269,8 +283,8 @@ end
 if numel(configs.alignRun) ~= 1
     fprintf('No alignment run selected. Please select the first functional run. \n');
     AlignRunName = uigetdir(fullfile( configs.dataRoot, ...
-            configs.subjectName, ...
-            'func'));
+        configs.subjectName, ...
+        'func'));
 end
 
 [~, configs.alignRun] = fileparts(AlignRunName);
@@ -287,11 +301,11 @@ configs.firstFunctRunName = functionalRuns{ configs.firstFunctRunIdx };
 
 save(fullfile(configs.dataRoot,configs.subjectName,'sliceTypePath.mat'),'sliceTypePath');
 
-   
+
 %% Rest of the runs
 for f = 1 : numFunctionalRuns
-
-    if ~(AlignRunsIdx == f)  
+    
+    if ~(AlignRunsIdx == f)
         preprocessFmrProject( configs, functionalRuns{f} , sliceVector{f} );
     end
 end
@@ -344,7 +358,7 @@ for f = 1 : numFunctionalRuns
     if configs.ATAL || configs.MTAL
         stringvtc = '_TAL';
     elseif configs.AMNI
-        stringvtc = '_MNI'; 
+        stringvtc = '_MNI';
     else
         stringvtc = '_NATIVE';
     end
@@ -362,7 +376,7 @@ for f = 1 : numFunctionalRuns
     
     % Link stimulation protocol
     
-
+    
     if exist(vmrProject.StimulationProtocolFile)
         prtFile = xff(vmrProject.StimulationProtocolFile);
     else
