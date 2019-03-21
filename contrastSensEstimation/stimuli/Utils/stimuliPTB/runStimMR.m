@@ -1,10 +1,10 @@
-function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct, S )
+function [ response, time ] = runStimMR( ptb, lcd, gabor, methodStruct, S )
 %RUNSTIM run stim based on preset variables
 
 % load gamma-corrected CLUT (color look-up table) - variable
 % "invertedCLUT".
 
-load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
+load(fullfile(pwd,'Utils','luminance','invertedCLUTMRscanner.mat'));
 
 try
     
@@ -189,10 +189,7 @@ try
                 
                 % If participant saw gabor, then (check response box button pressed). 
                 
-                
-                
-                %%%%%%%%%%%%%%%%%%%%%%TODO
-                if key == %VIU%
+                if key == 51 % TO CONFIRM COLOR
                     
                     hasResponse = true;
                     % Save results.
@@ -204,7 +201,7 @@ try
                     methodStruct=updateEstimate(methodStruct,1);
                     
                     % Else, if participant did not saw gabor, then.
-                elseif key == %NAOVIU%
+                elseif key == 52 % TO CONFIRM COLOR
                     hasResponse = true;
                     
                     % Save results.
@@ -216,12 +213,10 @@ try
                     
                 end
 
-                %%%%%%%%%%%%%%%%%%%%%%TODO
             end
         end
         
         IOPort('Flush',S.response_box_handle);
-        
         
         methodStruct.last=methodStruct.contrastTrial;
         % fprintf('Value of QUEST %f and of the last sample %f.\n',QuestMean(q),last);
@@ -237,9 +232,7 @@ try
     Screen('CloseAll');
     ShowCursor;
     Priority(0);
-    
-    
-    
+        
 catch me
     warning(me.message);
     

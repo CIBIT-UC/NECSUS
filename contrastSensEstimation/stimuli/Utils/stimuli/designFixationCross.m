@@ -3,7 +3,7 @@ function [fCross] = designFixationCross( )
 %   Detailed explanation goes here
    
     % set of size of the arms of our fixation cross
-    fCross.fixCrossDimPix=20;
+    fCross.fixCrossDimPix=4;%20;
     % set the line width for our fixation cross
     fCross.lineWidthPix=4;
         

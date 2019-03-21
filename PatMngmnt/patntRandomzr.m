@@ -4,8 +4,8 @@ clear all
 % Presets.
 % Different groups in the study (lenses type, controls, etc.).
 nGroups=3;
-numElemtnsPerGroup=[11,12,10];
-groupDescriptions={'Controls','Monofocal lenses','Bifocal lenses'};
+numElemtnsPerGroup=[10,10,10];
+groupDescriptions={'Controls','Monofocal lenses','multifocais lenses'};
 
 
 %% Randomize

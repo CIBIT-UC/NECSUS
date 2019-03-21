@@ -2,7 +2,13 @@ function [ invertedCLUT ] = getInverseGammaTable(  )
 %GETINVERSEGAMMATABLE Summary of this function goes here
 %   Detailed explanation goes here
 
-pathToGreydata='C:\Users\Bruno\Desktop\LuminanciaLCD-PR650-dez2018\LCDnexus\NecsusNolightGray-rgblum11-Dec-2018.mat';
+% LCD lab 95
+% pathToGreydata='C:\Users\bdireito\Documents\GitHub\NECSUS\contrastSensEstimation\stimuli\Utils\luminance\NecsusNolightGray-rgblum11-Dec-2018.mat';
+
+% MR projector
+pathToGreydata='C:\Users\bdireito\Documents\GitHub\NECSUS\contrastSensEstimation\stimuli\Utils\luminance\rgblumGRAY10-Mar-2016.mat';
+
+%'C:\Users\Bruno\Desktop\LuminanciaLCD-PR650-dez2018\LCDnexus\NecsusNolightGray-rgblum11-Dec-2018.mat';
 
 %'Common\LCD_linear_Acromatic_grey_data.mat';
 BITSRESOLUTION = 8;
