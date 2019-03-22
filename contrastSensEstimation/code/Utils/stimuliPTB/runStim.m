@@ -7,7 +7,7 @@ function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct )
 load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
 
 % Transform luminance required to rgb input.
-rgbInput=luminanceToRgb(ptb.backgroundLum);
+rgbInput=luminanceToRgb(ptb.backgroundLum, 8,lcd.pathToGreyData);% bits resolution - 8;
 
 % --- PTB setup ---
 Priority(2); % Set "real time priority level".
