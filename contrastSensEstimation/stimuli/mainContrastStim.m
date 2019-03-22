@@ -26,6 +26,10 @@ SPATIALFREQ=10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
 HASGLARE=0; % input('glare/noglare?:','s'); % glare setup
 BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
 
+% MR scanner or LCD
+%pathToGreyData=fullfile(pwd,'Utils','luminance','rgblumGRAY10-Mar-2016.mat');
+pathToGreyData=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
+
 % --- Make a vector to record/store the response for each trial ---
 respMatrix = [];
 
@@ -33,7 +37,7 @@ respMatrix = [];
 KbName('UnifyKeyNames');
 
 % --- LCD monitor ---
-lcd=lcdInfo(VIEWINGDISTANCE);
+lcd=lcdInfo(VIEWINGDISTANCE, pathToGreyData);
 
 % --- GABOR INFORMATION ---
 gabor=gaborInfo(SPATIALFREQ);

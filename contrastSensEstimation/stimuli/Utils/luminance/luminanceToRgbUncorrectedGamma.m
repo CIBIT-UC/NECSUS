@@ -1,9 +1,9 @@
-function [inverseGammaInput, Rb, Gb, Bb] = luminanceToRgbUncorrectedGamma(lumRequired, bitsRes, pathToGreydata)
+function [inverseGammaInput, Rb, Gb, Bb] = luminanceToRgbUncorrectedGamma(lumRequired, bitsRes, lcd)
 % example [invertGammaInput, Rb, Gb, Bb] = luminanceToRgb(20, 8, 'Common\LCD_linear_Acromatic_grey_data.mat')
 
 % VARGIN
 if nargin<3  
-    pathToGreydata='C:\Users\Bruno\Desktop\LuminanciaLCD-PR650-dez2018\LCDnexus\NecsusNolightGray-rgblum11-Dec-2018.mat';%'Common\LCD_linear_Acromatic_grey_data.mat';
+    pathToGreydata=lcd.pathT;%'Common\LCD_linear_Acromatic_grey_data.mat';
 %     pathToGreydata='C:\Users\Bruno\Desktop\LuminanciaLCD-PR650-dez2018\LCDnexus\necsusLightsONLedsON-GRAY-LCD_monitor_RGB_Lum11-Dec-2018.mat';
 end
 
