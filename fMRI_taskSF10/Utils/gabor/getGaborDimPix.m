@@ -1,6 +1,6 @@
-function [gaborDimPix] = getGaborDimPix(screenWidth,screenXpixels,viewingDistance,gaborDimDegree)
+function [gaborDimPix] = getGaborDimPix(screen, viewingDistance, gaborDimDegree)
 
-pixSize = screenWidth/screenXpixels  % pixel sizecm/pix
+pixSize = screen.screenWidth/screen.screenXpixels;  % pixel sizecm/pix
 
 SizeCm = 2*viewingDistance*tan(pi*gaborDimDegree/(2*180));  % dimension of gabor in cm
 

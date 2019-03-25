@@ -1,10 +1,13 @@
 function [linInput] = luminanceToRgb(lumRequired, bitsRes, pathToGreyData)
 
 if nargin<3  
-    pathToGreyData=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
-    %'Common\LCD_linear_Acromatic_grey_data.mat';
+    % MR scanner
+    pathToGreyData=fullfile(pwd,'Utils','luminance','rgblumGRAY10-Mar-2016.mat.mat');
     
-    disp('[Warning] default: lcd monitor lab95.')
+    % LCD lab 95
+    % pathToGreyData=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
+        
+    % disp('[Warning] default: lcd monitor lab95.')
 end
 
 if nargin<2

@@ -1,29 +1,62 @@
+%% INIT
 
-function Brain_fMRI_ContrastTask
+% close any open connection or PTB screen
+IOPort('Close All');
+Screen('Close All');
+sca;
 
-% Participant = get demographic data and contrast values obtained in
-% pshychophisical task for each participant.
-Participant=GetInformationParticipant;
+clear all;
+close all;
+clc;
+
+% --- addpath to required folders ---
+% addpath('Results');
+% addpath('Answers');
+
+addpath(genpath('Utils'));
+addpath(genpath('Protocols'));
+
+%% PRESETS
+
+% ---- PARTICIPANT data ----
+
+% Create participant variable with psychopsysics and meta data.
+ID='sub-NECSUS-UC001';
+
+NT=1;
+GT=1;
+GNT=1;
+
+PARTICIPANT=setParticipant(ID, NT, GT, GNT);
+
+% ---- CONDITIONS / STIMULI ----
 
 % get the conditions for each participant
-[conditionsV] = getConditions(Participant);
+[conditions]=setConditions(PARTICIPANT);
 
-% Ask for the fMRI PROTOCOL experiment and choose a RUN
-[filename, pathname] = uigetfile( {'*.lospp','LoSpP Protocol (*.lospp)';},'Open Protocol','Protocols/');
 
-% If you did not choose a fMRI PROTOCOL file for the EVENT-RELATED
-% experiment returns an error
-if ( ~ischar(pathname) || ~ischar(filename) )
+% ---- PROTOCOL ----
+
+% Get fMRI RUN protocol.
+[pFilename, pPath]=uigetfile({'*.lospp','LoSpP Protocol (*.lospp)';}...
+    ,'Open Protocol',...
+    'Protocols/');
+
+% Confirmation of fMRI PROTOCOL file for the EVENT-RELATED experiment
+% returns an error.
+if ( ~ischar(pPath) || ~ischar(pFilename) )
     errordlg('You must choose a file!','Error','modal');
     return
 end
 
-% Build the complete path for the file and load the experiment parameters
-completepath = strcat(pathname,filename);
-load(completepath,'-mat','chaos','nrepeats','tr','tr_factor');
+% Path for the file and load the experiment parameters.
+locationFile=strcat(pPath,pFilename);
+load(locationFile,'-mat','chaos','nrepeats','tr','tr_factor');
 
-% Define the protocol name to use from now
-protocolName = filename(1:end-6);
+
+%%
+% Protocol name.
+pName=pFilename(1:end-6);
 
 % Create the complete protocol with the subject-specific speed values
 [StimuliPrt] = CreateProtocol(chaos,nrepeats,tr,tr_factor,protocolName,conditionsV,Participant);
@@ -72,6 +105,4 @@ end
 
 end
 
-
-end
 

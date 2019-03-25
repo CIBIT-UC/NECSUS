@@ -12,7 +12,7 @@ event= parameters.events_multiplier;
 
 ttime = 0;
 
-% Compute the exact start time of each stimulation trial
+% Compute the exact start time of each stimulation trial.
 for k = 1:event*blocks
     if k == 1
         events{k,4} = ttime + bisi;
@@ -28,11 +28,10 @@ end
 events{k+1,1} = 'END';
 events{k+1,4} = ttime + events{k,3} + trial_duration;
 
-% Keep time of END
+% Keep time of END.
 end_time = events{k+1,4};
 
-
-% Each event ID in one column
+% Each event ID in one column.
 bv.start = zeros(type_range, conditions_range);
 
 for j = 1:length(events)
@@ -50,13 +49,11 @@ for j = 1:length(events)
             bv.start(h,k) = events{j,4};
             
         end
-      
+        
     end
 end
 
-
-% compute the exact start and end time of each stimulation trial
-
+% Compute the exact start and end time of each stimulation trial.
 bv.start = bv.start*1000;
 bv.end = bv.start+trial_duration*1000;
 
@@ -76,8 +73,6 @@ for k = 1:blocks*event+1
     else
         bv.fixation.end(k,1) = temp(k) - 1;
     end
-       
-
-
 end
 
+end

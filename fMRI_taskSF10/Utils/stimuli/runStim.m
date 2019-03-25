@@ -1,4 +1,4 @@
-function [logdata] = Load_Protocol(events,parameters)
+function [logdata] = runStim(events,parameters)
 
 % close any open connection or PTB screen
 IOPort('Close All');
@@ -6,154 +6,142 @@ Screen('Close All');
 pnet('closeall');
 sca;
 
-parameters.block_isi=8;
+%% --- PREPARATION ---
 
 % input hack (for debugging)
-debbugging=1; % 0-keyboard | 1-lumina response
-
-% Keyboard "normalization" of Escape key
-KbName('UnifyKeyNames');
-escapekey = KbName('Escape');
+iomethod=1; % 0-keyboard | 1-lumina response
 
 % Turn on (1) or off (0) synchrony with scanner console
 syncbox = 0;
 
+% Keyboard "normalization" of Escape key
+KbName('UnifyKeyNames');
+escapekey = KbName('Escape');
+% Not pressed.
+escapekeyPressed = 0;
 
 % Allow (1) or not (0) responses during stimulation and fixation period
 responsesDuringStim = 1;
 responsesDuringFix = 1;
 
-% This variable will become 1 if 'Esc' is pressed
-key_esc_p = 0;
-
-% Trick suggested by the PTB authors to avoid synchronization/calibration
-% problems
-figure(1)
-plot(sin(0:0.1:3.14));
-% Close figure with sin plot (PTB authors trick for synchronization)
-close Figure 1
-
+% Trick suggested by the PTB authors
+syncTrick
 
 % Load gamma corrected scale for MR pojector
 load(fullfile(pwd,'Utils','luminance','invertedCLUTMRscanner.mat'));
+
+
+% syncbox
+if syncbox
+    syncbox_handle = IOPort('OpenSerialPort', 'COM2', 'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
+    IOPort('Flush',syncbox_handle);
+end
+
 
 try
     % Set "real time priority level"
     Priority(2)
     
-    
+    % luminance background required => 20 cd/m2
     % Transform luminance required to rgb input.
     rgbInput=luminanceToRgb(ptb.backgroundLum);% bits resolution - 8;
     
-
-    % --------------------------COLOR SETUP--------------------------------
+    % ---- SCREEN SETUP ----
     
     % Get the screen numbers
     screens = Screen('Screens');
+    
     % Draw to the external screen if avaliable
     screenNumber = max(screens);
-    
-    % luminance background required => 20 cd/m2
-    % bit resolution =>8
-    % get background RGB from grey monitor luminance responce
-    
-    % Transform luminance required to rgb input.
-    rgbInput=luminanceToRgb(ptb.backgroundLum, 8,lcd.pathToGreyData);% bits resolution - 8;
-    
-    %%%%% [lum_obtained,Rb,Gb,Bb]=lum_match_RGBfinder(20,8);
-    % define black.
-    
+   
     % define white.
     white = WhiteIndex(screenNumber);
-    
-    
-    %  ----------------------- START DISPLAY ------------------------------
-    
+        
+    %  ---- START DISPLAY ----
     
     % Open an on screen window
     [window, windowRect] = Screen('OpenWindow', screenNumber,[rgbInput,rgbInput,rgbInput]);
+    
     % Get the size of the on screen window
     [screenXpixels, screenYpixels] = Screen('WindowSize', window);
-    %          screenXpixels=1024;
-    %          screenYpixels=768;
-    % Set the text size
+    % screenXpixels=1024;
+    % screenYpixels=768;
+
     HideCursor;
     
-    %------------------------ PARAMETER SETUP------------------------------
+    % ---- PARAMETER SETUP ----
     
-    % % CENTRAL CROSS INFORMATION % %
+    % Fixation cross
     
-    % Get the centre coordinate of the window
+    % Get the centre coordinate of the window and create cross.
     [xCenter, yCenter] = RectCenter(windowRect);
-    HideCursor;
-    
-    % set of size of the arms of our fixation cross
-    fixCrossDimPix=20;
-    
-    % set the coordinates for fixation cross in the center of the screen
-    xCrossCoords = [-fixCrossDimPix fixCrossDimPix 0 0];
-    yCrossCoords = [0 0 -fixCrossDimPix fixCrossDimPix];
-    CrossCoords = [xCrossCoords; yCrossCoords];
-    
-    % set the line width for our fixation cross
-    lineWidthPix=4;
+    [fCross]=designFixationCross();
     
     
-    % % GABOR INFORMATION % %
+    % Gabor info    
     
-    screenHeight = 39.5; %15;%25.9; % Screen height (cm)
-    screenWidth = 70; %20; % Screen width (cm)
-    viewingDistance = 156.5; % Viewing Distance (cm)
-    gaborDimDegree =12; %750; % Dimension of the region where will draw the Gabor in pixels
-    phase=0; % spatial phase
-    angle = 0; %the optional orientation angle in degrees (0-360)
-    aspectratio = 1.0; % Defines the aspect ratio of the hull of the gabor
+    % Screen height (cm).
+    screen.screenHeight=39.5; %15;%25.9; 
+    % Screen width (cm).
+    screen.screenWidth=70; %20; 
+    % Viewing Distance (cm).
+    viewingDistance=156.5;
+    % Dimension of the region where will draw the Gabor in pixels.
+    gaborDimDegree=12; %750; 
+    % Spatial phase.
+    phase=0; 
+    % Optional orientation angle in degrees (0-360).
+    angle=0; 
+    % Defines the aspect ratio of the hull of the gabor.
+    aspectratio=1.0; 
+    
+    % Gabor dimensions.
+    [gaborDimPix]=getGaborDimPix(screen,...
+        viewingDistance,...
+        gaborDimDegree);
+    
+    % Sigma of Gaussian.
+    sigma=gaborDimPix/5; 
+    
+    % Build a procedural gabor texture.
+    gabortex=CreateProceduralGabor(window,...
+        gaborDimPix,...
+        gaborDimPix,...
+        0,...
+        [rgbInput rgbInput rgbInput 0.0]);
     
     
-    % get Gabor dimensions
-    [gaborDimPix] = getGaborDimPix(screenHeight,screenYpixels,viewingDistance,gaborDimDegree);
-    sigma = gaborDimPix /5; % Sigma of Gaussian
-    % Build a procedural gabor texture
-    gabortex = CreateProceduralGabor(window, gaborDimPix, gaborDimPix, 0,[rgbInput rgbInput rgbInput 0.0]);
+    % Stimuli presentation cycle.
+    totalTrials=length(events);
     
-    % Stimuli presentation cycle
-    trial = length(events);
-    
-    % pre-allocate variables to store responses
+    % Pre-allocate variables to store responses
     if responsesDuringStim
         % Create variable to store responses during stimulation periods
-        logdata.responsesDuringStimulation = zeros(trial,2);
+        logdata.responsesDuringStimulation = zeros(totalTrials,2);
         logdata.responsesDuringStimulation(:,1) = 5; % 5 = no answer
     end
     
     if responsesDuringFix
         % Create variable to store responses during fixation periods
-        logdata.responsesDuringFixation = zeros(trial,2);
+        logdata.responsesDuringFixation = zeros(totalTrials,2);
         logdata.responsesDuringFixation(:,1) = 5; % 5 = no answer
     end
     
     
-    % syncbox
-    if syncbox
-        syncbox_handle = IOPort('OpenSerialPort', 'COM2', 'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
-        IOPort('Flush',syncbox_handle);
-    end
-    
-    switch debbugging
+    switch iomethod
         
-        case 0 % keyboard answer
-            
+        % Keyboard answer.
+        case 0 
             keyView=KbName('m'); % key to see
-            keyNotView=KbName('z'); % key not se
+            keyNotView=KbName('z'); % key not see.
             
-        case 1 % lumina response box LU400 (A)
-            
+        % Lumina response box LU400 (A).
+        case 1 
             response_box_handle = IOPort('OpenSerialPort','COM3');
             IOPort('Flush',response_box_handle);
             
             keyView = 50;
             keyNotView = 49;
-            
     end
     
     %-----------------------------------------------------------------%
@@ -161,7 +149,7 @@ try
     %-----------------------------------------------------------------%
     
     
-    for i = 1:trial % experimental loop --> one interaction= stim+fix
+    for i = 1:totalTrials % experimental loop --> one interaction= stim+fix
         
         
         if i==1 %If it is the first trial
