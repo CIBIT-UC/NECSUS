@@ -1,40 +1,29 @@
-function [logdata] = runStim(events,parameters)
+function [logdata] = runStim(stimuli, scr, gabor)
 
-% close any open connection or PTB screen
-IOPort('Close All');
-Screen('Close All');
-pnet('closeall');
-sca;
+% --- STIMULI PRESETS ----
 
-%% --- PREPARATION ---
+% --- scr variable represents screen features. ---
+% --- gabor variable represents the stimuli gabor features. ---
 
-% input hack (for debugging)
-iomethod=1; % 0-keyboard | 1-lumina response
 
-% Turn on (1) or off (0) synchrony with scanner console
-syncbox = 0;
-
-% Keyboard "normalization" of Escape key
-KbName('UnifyKeyNames');
-escapekey = KbName('Escape');
-% Not pressed.
-escapekeyPressed = 0;
+% % % Not pressed.
+% % escapekeyPressed = 0;
 
 % Allow (1) or not (0) responses during stimulation and fixation period
 responsesDuringStim = 1;
 responsesDuringFix = 1;
 
 % Trick suggested by the PTB authors
-syncTrick
+syncTrick();
 
 % Load gamma corrected scale for MR pojector
 load(fullfile(pwd,'Utils','luminance','invertedCLUTMRscanner.mat'));
 
 
-% syncbox
-if syncbox
-    syncbox_handle = IOPort('OpenSerialPort', 'COM2', 'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
-    IOPort('Flush',syncbox_handle);
+% Syncbox if DEBUG off.
+if stimuli.syncbox
+    syncBoxHandle=IOPort('OpenSerialPort', 'COM2', 'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
+    IOPort('Flush',syncBoxHandle);
 end
 
 
@@ -44,56 +33,52 @@ try
     
     % luminance background required => 20 cd/m2
     % Transform luminance required to rgb input.
-    rgbInput=luminanceToRgb(ptb.backgroundLum);% bits resolution - 8;
+    rgbInput=luminanceToRgb(stimuli.backgroundLum);% bits resolution - 8;
     
-    % ---- SCREEN SETUP ----
+        
+    %  ---- START DISPLAY ----
+    
+    % SCREEN SETUP
     
     % Get the screen numbers
     screens = Screen('Screens');
     
     % Draw to the external screen if avaliable
-    screenNumber = max(screens);
-   
-    % define white.
-    white = WhiteIndex(screenNumber);
-        
-    %  ---- START DISPLAY ----
-    
+    scr.screenNumber = max(screens);
+
     % Open an on screen window
-    [window, windowRect] = Screen('OpenWindow', screenNumber,[rgbInput,rgbInput,rgbInput]);
+    [window, windowRect] = Screen('OpenWindow',...
+        scr.screenNumber,...
+        [round(rgbInput*255),round(rgbInput*255),round(rgbInput*255)],... % Background RGB values.
+        [],...
+        [],...
+        [],...
+        [],...
+        0);
+    
+    % MONITOR SETUP / Linearize monitor gamma.
+    
+    % upload inverse gamma function to screen - linearize lum.
+    originalCLUT=Screen('LoadNormalizedGammaTable',...
+        window,...
+        repmat(invertedCLUT, [3,1])' );
+    
+    % Define white.
+    scr.white = WhiteIndex(scr.screenNumber);
     
     % Get the size of the on screen window
-    [screenXpixels, screenYpixels] = Screen('WindowSize', window);
+    [scr.screenXpixels, scr.screenYpixels] = Screen('WindowSize', window);
     % screenXpixels=1024;
     % screenYpixels=768;
-
+    
+    % Fixation cross    
+    % Get the centre coordinate of the window and create cross.
+    [xCenter, yCenter]=RectCenter(windowRect);
+    [fCross]=designFixationCross();
+    
     HideCursor;
     
     % ---- PARAMETER SETUP ----
-    
-    % Fixation cross
-    
-    % Get the centre coordinate of the window and create cross.
-    [xCenter, yCenter] = RectCenter(windowRect);
-    [fCross]=designFixationCross();
-    
-    
-    % Gabor info    
-    
-    % Screen height (cm).
-    screen.screenHeight=39.5; %15;%25.9; 
-    % Screen width (cm).
-    screen.screenWidth=70; %20; 
-    % Viewing Distance (cm).
-    viewingDistance=156.5;
-    % Dimension of the region where will draw the Gabor in pixels.
-    gaborDimDegree=12; %750; 
-    % Spatial phase.
-    phase=0; 
-    % Optional orientation angle in degrees (0-360).
-    angle=0; 
-    % Defines the aspect ratio of the hull of the gabor.
-    aspectratio=1.0; 
     
     % Gabor dimensions.
     [gaborDimPix]=getGaborDimPix(screen,...
@@ -160,7 +145,7 @@ try
             
             % syncbox is 'on' or 'off'?
             if syncbox
-                [gotTrigger, logdata.triggerTimeStamp] = waitForTrigger(syncbox_handle,1,1000);
+                [gotTrigger, logdata.triggerTimeStamp]=waitForTrigger(syncBoxHandle,1,1000);
                 if gotTrigger
                     disp('Trigger OK! Starting stimulation...');
                 else

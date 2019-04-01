@@ -18,7 +18,7 @@ addpath(genpath('Utils'));
 %% PRESETS
 
 % participant's code
-PARTICIPANTNAME='TEST';%sub-NECSUS-UC001%; 
+PARTICIPANTNAME='testBruno';%sub-NECSUS-UC001%; 
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
 VIEWINGDISTANCE=40; %150 | 40 (debug)

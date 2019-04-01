@@ -6,8 +6,6 @@ if nargin<3
     
     % LCD lab 95
     % pathToGreyData=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
-        
-    % disp('[Warning] default: lcd monitor lab95.')
 end
 
 if nargin<2
