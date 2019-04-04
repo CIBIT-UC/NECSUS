@@ -17,7 +17,7 @@ addpath(genpath('Utils'));
 
 %% PRESETS
 
-PARTICIPANTNAME=input('Participant Code:','s'); % participant's code
+PARTICIPANTNAME='MANUELRAMOS'; % participant's code
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
 VIEWINGDISTANCE=150; %150 | 40 (debug)
@@ -37,7 +37,7 @@ respMatrix = [];
 KbName('UnifyKeyNames');
 
 % --- LCD monitor ---
-lcd=lcdInfo(VIEWINGDISTANCE);
+lcd=lcdInfo(VIEWINGDISTANCE, pathToGreyData);
 
 % --- GABOR INFORMATION ---
 gabor=gaborInfo(SPATIALFREQ);
@@ -66,7 +66,7 @@ syncTrick(); % Run sync trick proposed by PTB dev.
 ptb.screens=Screen('Screens');
 
 % Draw to the external screen if avaliable
-ptb.screenNumber=2;% max(ptb.screens);
+ptb.screenNumber=0;% max(ptb.screens);
 
 ptb.backgroundLum=BACKGROUNDLUM;
 

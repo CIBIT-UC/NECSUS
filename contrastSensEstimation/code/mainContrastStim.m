@@ -58,7 +58,7 @@ syncTrick(); % Run sync trick proposed by PTB dev.
 ptb.screens=Screen('Screens');
 
 % Draw to the external screen if avaliable
-ptb.screenNumber=1;
+ptb.screenNumber=0;
 
 ptb.backgroundLum=BACKGROUNDLUM;
 

@@ -35,6 +35,9 @@ try
         wScreen,...
         repmat(invertedCLUT, [3,1])' );
     
+    % Screen debug.
+    save('debug.mat','originalCLUT')
+    
     
     % Define white.
     white=WhiteIndex(ptb.screenNumber); % required to display fixation cross
@@ -79,9 +82,18 @@ try
     % Display fixation cross in the center of the screen and wait for
     % keyboard key press to start countdown (5 to 1 with 0.5
     % sec interval).
-    DrawFormattedText(wScreen,'press any key.','center','center',white);
+    DrawFormattedText(wScreen,'wait for trigger.','center','center',white);
     Screen('Flip',wScreen); % Flip to the screen.
-    KbStrokeWait;
+    
+    
+    syncBoxHandle=IOPort('OpenSerialPort',...
+        'COM2',...
+        'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
+    IOPort('Flush',syncBoxHandle);
+    
+    
+    [gotTrigger, log.triggerTimeStamp]=waitForTrigger(syncBoxHandle,1,1000);
+
     
     % Present countdown.
     for countDownIdx = 1:numel(stim.countDownVals)
@@ -227,8 +239,11 @@ try
     
     fprintf('The experiment is finished.\n');
     fprintf('Closing setup.\n');
+    
     % Restore originalCLUT.
+    load('debug.mat')
     Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
+
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;
@@ -238,7 +253,9 @@ catch me
     warning(me.message);
     
     % Restore originalCLUT.
+    load('debug.mat')
     Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
+
     
     % Close PTB Screen.
     Screen('CloseAll');

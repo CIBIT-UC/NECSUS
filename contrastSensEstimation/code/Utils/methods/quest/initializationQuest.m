@@ -6,7 +6,7 @@ function [questStruct] = initializationQuest()
 
 questStruct=struct(); %init struct
 
-questStruct.name="QUEST";
+questStruct.name='QUEST';
 
 % Estimation based on previous data / initial guess
 questStruct.estMean=6.2980;
