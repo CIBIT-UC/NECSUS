@@ -22,9 +22,9 @@ try
             'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
         IOPort('Flush',syncBoxHandle);
         % ResponseBox.
-        responseBoxHandle=IOPort('OpenSerialPort',...
+        S.responseBoxHandle=IOPort('OpenSerialPort',...
             S.responseBoxCom);
-        IOPort('Flush',responseBoxHandle);
+        IOPort('Flush',S.responseBoxHandle);
         
          % Stimuli presentation loop.
         totalTrials=length(S.prt.events);
@@ -52,7 +52,7 @@ try
     Screen('Preference', 'SkipSyncTests', 1);
     
     % Draw to the external screen if avaliable
-    scr.screenNumber=1;% max(screens);
+    scr.screenNumber=0;% max(screens);
     
     % Open an on screen window
     [window, windowRect] = Screen('OpenWindow',...

@@ -22,10 +22,10 @@ addpath(genpath('Protocols'));
 % ---- PARTICIPANT data ----
 
 % Create participant variable with psychopsysics and meta data.
-ID='sub-NECSUS-UC001';
-NT=1; % Near Threshold without GLARE.
-GT=2; % Threshold with GLARE.
-GNT=2.5; % Near Threshold with GLARE.
+ID='MANUELRAMOS';
+NT=1.2; % Near Threshold without GLARE.
+GT=1.5; % Threshold with GLARE.
+GNT=1.6; % Near Threshold with GLARE.
 PARTICIPANT=setParticipant(ID, NT, GT, GNT);
 
 VIEWINGDISTANCE=156.5; % 40; debug
@@ -35,7 +35,7 @@ SYNCBOXCOM='COM2';
 
 % ---- CONDITIONS / STIMULI ----
 
-DEBUG=1;
+DEBUG=0;
 BACKGROUNDLUM=20;
 
 S=struct();

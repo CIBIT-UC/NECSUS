@@ -10,7 +10,7 @@ if ~isempty(key)
     % Disable further button presses.
     hasResponded = 1;
    
-    IOPort('Flush',response_box_handle);
+    IOPort('Flush',responseBoxHandle);
   
     % Subject responded 'View'.
     if  key==keys.keyView

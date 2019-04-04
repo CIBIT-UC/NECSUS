@@ -9,10 +9,10 @@ if ~hasResponded
     
     % Responses
     if S.debug
-        [response, hasResponded]=getKeyboardResponses(S.keys, startTime);
+        [response, hasResponded]=getKeyboardResponses(S.keys,startTime);
         
     elseif ~S.debug
-        [response, hasResponded]=getResponseBoxResponses(S.keys, responseBoxHandle, startTime);
+        [response, hasResponded]=getResponseBoxResponses(S.keys,S.responseBoxHandle, startTime);
     end
     
 end
