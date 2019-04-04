@@ -23,6 +23,9 @@ Priority(2); % Set "real time priority level".
     [],...
     0);
 
+   %%%%%%%%% Be careful.%%%%%%%%%%
+    Screen('Preference', 'SkipSyncTests', 1);
+
 
 % --- START DISPLAY ---
 try
@@ -31,6 +34,9 @@ try
     originalCLUT=Screen('LoadNormalizedGammaTable',...
         wScreen,...
         repmat(invertedCLUT, [3,1])' );
+    
+     % Screen debug.
+    save('debug.mat','originalCLUT')
     
     
     % Define white.
@@ -76,7 +82,11 @@ try
     % Display fixation cross in the center of the screen and wait for
     % keyboard key press to start countdown (5 to 1 with 0.5
     % sec interval).
-    DrawFormattedText(wScreen,'press any key.','center','center',white);
+    DrawFormattedText(wScreen,...
+        'Press any key. Remember(1 no pattern and 3 pattern).',...
+        'center',...
+        'center',...
+        white);
     Screen('Flip',wScreen); % Flip to the screen.
     KbStrokeWait;
     
@@ -212,8 +222,24 @@ try
     
     fprintf('The experiment is finished.\n');
     fprintf('Closing setup.\n');
+    
+    
+    % Display fixation cross in the center of the screen and wait for
+    % keyboard key press to start countdown (5 to 1 with 0.5
+    % sec interval).
+    DrawFormattedText(wScreen,...
+        'Finished. Processing results.',...
+        'center',...
+        'center',...
+        white);
+    Screen('Flip',wScreen); % Flip to the screen.
+    
+    pause(1);
+    
     % Restore originalCLUT.
+    load('debug.mat')
     Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
+
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;
@@ -225,8 +251,9 @@ catch me
     warning(me.message);
     
     % Restore originalCLUT.
+    load('debug.mat')
     Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
-    
+
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;

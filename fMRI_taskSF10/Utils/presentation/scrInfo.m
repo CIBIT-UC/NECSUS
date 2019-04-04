@@ -6,8 +6,7 @@ function [ scr ] = scrInfo(VIEWINGDISTANCE)
 
 scr=struct();
 
-% MR lcd
-
+% MR lcd size.
 % Screen height (cm).
 scr.screenHeight=39.5; 
 % Screen width (cm).
@@ -16,9 +15,11 @@ scr.screenWidth=70;
 % % scr.screenHeight=25.9; % Screen height (cm) nb. 34.7.
 % % scr.screenWidth=54.6; % Screen width (cm).
 
-scr.viewingDistance=VIEWINGDISTANCE; %150; % Viewing Distance (cm).
+% Viewing Distance (cm).
+scr.viewingDistance=VIEWINGDISTANCE; 
 
-scr.bitres=8; % Bits.
+% Bits.
+scr.bitres=8; 
 
 
 end

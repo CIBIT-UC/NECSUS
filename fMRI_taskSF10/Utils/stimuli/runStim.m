@@ -1,17 +1,9 @@
-function [logdata] = runStim(stimuli, scr, gabor)
+function [log] = runStim(S, scr, gabor)
 
 % --- STIMULI PRESETS ----
 
 % --- scr variable represents screen features. ---
 % --- gabor variable represents the stimuli gabor features. ---
-
-
-% % % Not pressed.
-% % escapekeyPressed = 0;
-
-% Allow (1) or not (0) responses during stimulation and fixation period
-responsesDuringStim = 1;
-responsesDuringFix = 1;
 
 % Trick suggested by the PTB authors
 syncTrick();
@@ -19,23 +11,31 @@ syncTrick();
 % Load gamma corrected scale for MR pojector
 load(fullfile(pwd,'Utils','luminance','invertedCLUTMRscanner.mat'));
 
-
-% Syncbox if DEBUG off.
-if stimuli.syncbox
-    syncBoxHandle=IOPort('OpenSerialPort', 'COM2', 'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
-    IOPort('Flush',syncBoxHandle);
-end
-
-
 try
+    % -- if DEBUG off.
+    if ~S.debug
+        % Open SerialPorts.
+        
+        % SyncBox.
+        syncBoxHandle=IOPort('OpenSerialPort',...
+            S.syncBoxCom,...
+            'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
+        IOPort('Flush',syncBoxHandle);
+        
+        % ResponseBox.
+        responseBoxHandle=IOPort('OpenSerialPort',...
+            S.responseBoxCom);
+        IOPort('Flush',responseBoxHandle);
+    end
+    
     % Set "real time priority level"
     Priority(2)
     
     % luminance background required => 20 cd/m2
     % Transform luminance required to rgb input.
-    rgbInput=luminanceToRgb(stimuli.backgroundLum);% bits resolution - 8;
+    rgbInput=luminanceToRgb(S.backgroundLum);% bits resolution - 8;
     
-        
+    
     %  ---- START DISPLAY ----
     
     % SCREEN SETUP
@@ -43,9 +43,12 @@ try
     % Get the screen numbers
     screens = Screen('Screens');
     
+    %%%%%%%%% Be careful.%%%%%%%%%%
+    Screen('Preference', 'SkipSyncTests', 1);
+    
     % Draw to the external screen if avaliable
-    scr.screenNumber = max(screens);
-
+    scr.screenNumber=1;
+    
     % Open an on screen window
     [window, windowRect] = Screen('OpenWindow',...
         scr.screenNumber,...
@@ -63,6 +66,9 @@ try
         window,...
         repmat(invertedCLUT, [3,1])' );
     
+    % Screen debug.
+    save('debug.mat','originalCLUT')
+    
     % Define white.
     scr.white = WhiteIndex(scr.screenNumber);
     
@@ -71,403 +77,179 @@ try
     % screenXpixels=1024;
     % screenYpixels=768;
     
-    % Fixation cross    
+    % Fixation cross
     % Get the centre coordinate of the window and create cross.
     [xCenter, yCenter]=RectCenter(windowRect);
     [fCross]=designFixationCross();
-    
-    HideCursor;
+    fCross.xCenter=xCenter;
+    fCross.yCenter=yCenter;
     
     % ---- PARAMETER SETUP ----
     
     % Gabor dimensions.
-    [gaborDimPix]=getGaborDimPix(screen,...
-        viewingDistance,...
-        gaborDimDegree);
+    gabor.gaborDimPix=getGaborDimPix(scr,...
+        scr.viewingDistance,...
+        gabor.gaborDimDegree);
     
     % Sigma of Gaussian.
-    sigma=gaborDimPix/5; 
+    gabor.sigma=gabor.gaborDimPix/5;
     
     % Build a procedural gabor texture.
     gabortex=CreateProceduralGabor(window,...
-        gaborDimPix,...
-        gaborDimPix,...
-        0,...
-        [rgbInput rgbInput rgbInput 0.0]);
+        gabor.gaborDimPix,...
+        gabor.gaborDimPix,...
+        0,...% nonSymmetric.
+        [rgbInput rgbInput rgbInput 0.0],...
+        [],...
+        []);
+    
+    % Desired spatial frequency.
+    desiredSpatFreq=S.prt.events{1,4};
+    % Gabor creation based on desired spatial frequency.
+    gabor.spatFreq=computeSpatialFrequency(scr.screenHeight,...
+        scr.screenYpixels,...
+        scr.viewingDistance,...
+        desiredSpatFreq);
     
     
-    % Stimuli presentation cycle.
-    totalTrials=length(events);
-    
-    % Pre-allocate variables to store responses
-    if responsesDuringStim
-        % Create variable to store responses during stimulation periods
-        logdata.responsesDuringStimulation = zeros(totalTrials,2);
-        logdata.responsesDuringStimulation(:,1) = 5; % 5 = no answer
-    end
-    
-    if responsesDuringFix
-        % Create variable to store responses during fixation periods
-        logdata.responsesDuringFixation = zeros(totalTrials,2);
-        logdata.responsesDuringFixation(:,1) = 5; % 5 = no answer
-    end
-    
-    
-    switch iomethod
-        
-        % Keyboard answer.
-        case 0 
-            keyView=KbName('m'); % key to see
-            keyNotView=KbName('z'); % key not see.
-            
-        % Lumina response box LU400 (A).
-        case 1 
-            response_box_handle = IOPort('OpenSerialPort','COM3');
-            IOPort('Flush',response_box_handle);
-            
-            keyView = 50;
-            keyNotView = 49;
-    end
+    % Stimuli presentation loop.
+    totalTrials=5;%length(S.prt.events);
+    log=struct();
     
     %-----------------------------------------------------------------%
     %                      EXPERIMENTAL LOOP                          %
     %-----------------------------------------------------------------%
     
+    % --- Stimuli presentation ----
     
-    for i = 1:totalTrials % experimental loop --> one interaction= stim+fix
-        
-        
-        if i==1 %If it is the first trial
-            
-            Screen('FillRect',window,[rgbInput rgbInput rgbInput]);
-            Screen('Flip',window);
-            
-            
-            % syncbox is 'on' or 'off'?
-            if syncbox
-                [gotTrigger, logdata.triggerTimeStamp]=waitForTrigger(syncBoxHandle,1,1000);
-                if gotTrigger
-                    disp('Trigger OK! Starting stimulation...');
-                else
-                    disp('Absent trigger. Aborting...');
-                    throw
-                end
-            else
-                KbWait;
-            end
-            
-            
-            % Display fixation cross in the center of the screen and wait for
-            % keyboard key press to start countdown (5 to 1 with 0.5 sec interval)
-            Screen('DrawLines',window,CrossCoords,lineWidthPix,white,[xCenter yCenter]);
-            Screen('Flip',window);% Flip to the screen
-            
-            % Present fixation cross for the pre-determined time
-            waitUntil = GetSecs + parameters.block_isi;
-            
-            % Ensure that the first block (fixation) lasts until the end
-            while GetSecs < waitUntil
-                
-                % Look for 'Esc' press
-                [keyisdown, secs, keycode] = KbCheck;
-                
-                if keyisdown && keycode(escapekey)
-                    
-                    % Close PTB screen and connections
-                    Screen('CloseAll');
-                    IOPort('CloseAll');
-                    pnet('closeall');
-                    ShowCursor;
-                    Priority(0);
-                    
-                    return
-                    
-                end
-                
-            end
+    % DEBUG? SYNCBOX trigger
+    if ~S.debug
+        [gotTrigger, log.triggerTimeStamp]=waitForTrigger(syncBoxHandle,1,1000);
+        if gotTrigger
+            HideCursor;
+            disp('Trigger OK! Starting stimulation...');
+        else
+            disp('Absent trigger. Aborting...');
+            throw
         end
-        
-        
-        %------------------------------------------------------%
-        % if it is not the first block, start with stimulation %
-        %------------------------------------------------------%
-        
-        % The contrast and spatial frequency values are retrivieved from
-        % the protocols:
-        
-        contrast=events{i,2}; % contrast value
-        
-        desiredSF=events{i,4}; % spatial frequency desired
-        
-        % Get Spatial Frequency
-        [SF] = getSpatialFrequency(screenHeight,screenYpixels,viewingDistance,desiredSF);
-        
-        %---------------------START DISPLAY------------------------------%
-        
-        % Display fixation cross in the center of the screen and wait for
-        Screen('DrawLines',window,CrossCoords,lineWidthPix,white,[xCenter yCenter]);
-        Screen('Flip',window);% Flip to the screen
-        
-        trial_duration=0;
-        
-        % Clean responses buffer - this means that the program saves the
-        % first response but does not save following button presses within
-        % the same block
-        inputStim=0;
-        
-        
-        %-------------- STIMULATION PART OF THE TRIAL (BLOCK)------------%
-        
-        t0=GetSecs;
-        
-        while trial_duration <= parameters.trial_duration
-            
-            
-            % Draw the Gabor
-            Screen('DrawTexture', window, gabortex, [], [], angle, [], [], ...
-                [], [], kPsychDontDoRotation, [phase+180, SF, sigma, contrast, aspectratio, 0, 0, 0]);
-            % Flip to the screen
-            Screen('Flip', window);
-            
-            
-            
-            %-------- Look for button presses during stimulation-------- %
-            
-            
-            % Escape %
-            
-            % Check if 'Escape' is pressed in keyboard
-            [keyisdown, timestamp, keycode] = KbCheck;
-            
-            % If it was an 'Esc' press: abort program
-            if keyisdown && keycode(escapekey)
-                
-                % Close PTB screen and connections
-                Screen('CloseAll');
-                IOPort('CloseAll');
-                pnet('closeall');
-                ShowCursor;
-                Priority(0);
-                
-                % Launch window with warning of early end
-                warndlg('The task was terminated with ''Esc'' before the end!','Warning','modal')
-                
-                return
-                
-            end
-            
-            % Responses %
-            
-            if debbugging == 0 && ... % keyboard
-                    inputStim == 0 && ... % It is the first press
-                    responsesDuringStim == 1 % Response during stimulation is allowed
-                
-                % Look for keyboard key press
-                [keyisdown, timestamp, keycode] = KbCheck;
-                if keyisdown == 1
-                    key = find(keycode); % Get key identifier
-                    inputStim = 1;
-                    timeOfResponse = timestamp;
-                    
-                    if  key == keyView % Subject responded 'View'
-                        
-                        % Save time in logdata
-                        logdata.responsesDuringStimulation(i,1) = 1;
-                        logdata.responsesDuringStimulation(i,2) = timeOfResponse - t0;
-                        
-                        % Disable further button presses
-                        inputStim = 1;
-                        
-                    elseif  key == keyNotView % Subject responded 'not view'
-                        
-                        logdata.responsesDuringStimulation(i,1) = 0;
-                        % Save time in logdata
-                        logdata.responsesDuringStimulation(i,2) = timeOfResponse - t0;
-                        
-                        % Disable further button presses
-                        inputStim = 1;
-                        
-                    end
-                    
-                end
-                
-                
-            elseif debbugging  == 1 && ... % Lumina response box
-                    inputStim == 0 && ... % It is the first press
-                    responsesDuringStim == 1 % Response during stimulation is allowed
-                
-                % Look for button press in response box
-                [key, timestamp, errmsg] = IOPort('Read',response_box_handle);
-                if ~isempty(key)
-                    IOPort('Flush',response_box_handle);
-                    timeOfResponse = timestamp;
-                    
-                    if  key == keyView % Subject responded 'View'
-                        
-                        % Save time in logdata
-                        logdata.responsesDuringStimulation(i,1) = 1;
-                        logdata.responsesDuringStimulation(i,2) = timeOfResponse - t0;
-                        % Disable further button presses
-                        inputStim = 1;
-                        
-                        
-                    elseif  key == keyNotView % Subject responded 'not view'
-                        
-                        logdata.responsesDuringStimulation(i,1) = 0;
-                        % Save time in logdata
-                        logdata.responsesDuringStimulation(i,2) = timeOfResponse - t0;
-                        
-                        % Disable further button presses
-                        inputStim = 1;
-                        
-                    end
-                    
-                end
-                
-            end
-            
-            % Trial Time Statements
-            trial_duration = GetSecs - t0;
-            
-        end
-        
-        %---------------- FIXATION PART OF THE TRIAL (BLOCK)--------------%
-        
-        
-        % Display fixation cross in the center of the screen and wait for
-        Screen('DrawLines',window,CrossCoords,lineWidthPix,white,[xCenter yCenter]);
-        Screen('Flip',window);% Flip to the screen
-        
-        % Clean responses buffer - this means that the program saves the
-        % first response but not following button presses within the same
-        % block
-        inputFix = 0;
-        
-        
-        % Ensure the fixation lasts until the end of the pre-determined
-        % inter stimulus interval for the k-th block: 'event{k,3}'
-        t0 = GetSecs;
-        waitUntil = t0 + events{i,3};
-        
-        while GetSecs < waitUntil
-            
-            %-----------------------------------------%
-            % Look for button presses during fixation %
-            %-----------------------------------------%
-            
-            %--------%
-            % Escape %
-            %--------%
-            % Check if 'Escape' is pressed in keyboard
-            [keyisdown, timestamp, keycode] = KbCheck;
-            
-            
-            % If it was an 'Esc' press: abort program
-            if keyisdown && keycode(escapekey)
-                
-                % Close PTB screen and connections
-                Screen('CloseAll');
-                IOPort('CloseAll');
-                pnet('closeall');
-                ShowCursor;
-                Priority(0);
-                
-                % Launch window with warning of early end
-                warndlg('The task was terminated with ''Esc'' before the end!','Warning','modal')
-                
-                return
-                
-            end
-            
-            % Responses %
-            
-            if debbugging == 0 && ... % keyboard
-                    inputFix == 0 && ... % It is the first press
-                    responsesDuringFix == 1 % Response during stimulation is allowed
-                
-                % Look for keyboard key press
-                [keyisdown, timestamp, keycode] = KbCheck;
-                if keyisdown == 1
-                    key = find(keycode); % Get key identifier
-                    inputFix = 1;
-                    timeOfResponse = timestamp;
-                    
-                    % Decode which was the response %
-                    
-                    if key == keyView % Subject responded 'View'
-                        
-                        logdata.responsesDuringFixation(i,1) = 1;
-                        % Save time in logdata
-                        logdata.responsesDuringFixation(i,2) = timeOfResponse - t0;
-                        % Disable further button presses
-                        inputFix = 1;
-                        
-                    elseif key == keyNotView  % Subject responded 'left'
-                        
-                        logdata.responsesDuringFixation(i,1) = 0;
-                        % Save time in logdata
-                        logdata.responsesDuringFixation(i,2) = timeOfResponse - t0;
-                        % Disable further button presses
-                        inputFix = 1;
-                        
-                    end
-                    
-                end
-                
-            elseif debbugging  == 1 && ... % Lumina response box
-                    inputFix == 0 && ... % It is the first press
-                    responsesDuringFix == 1 % Response during stimulation is allowed
-                
-                % Look for button press in response box
-                [key, timestamp, errmsg] = IOPort('Read',response_box_handle);
-                if ~isempty(key)
-                    IOPort('Flush',response_box_handle);
-                    timeOfResponse = timestamp;
-                    
-                    % Decode which was the response %
-                    
-                    if key == keyView % Subject responded 'View'
-                        
-                        logdata.responsesDuringFixation(i,1) = 1;
-                        % Save time in logdata
-                        logdata.responsesDuringFixation(i,2) = timeOfResponse - t0;
-                        % Disable further button presses
-                        inputFix = 1;
-                        
-                    elseif key == keyNotView  % Subject responded 'left'
-                        
-                        logdata.responsesDuringFixation(i,1) = 0;
-                        % Save time in logdata
-                        logdata.responsesDuringFixation(i,2) = timeOfResponse - t0;
-                        % Disable further button presses
-                        inputFix = 1;
-                    end
-                    
-                end
-                
-            end
-            
-            
-        end
-        
-    end % end of block (trial) loop
+    else
+        % Present info and countdown.
+        stimDebugInit(window, scr.white)
+    end
     
-    % Close PTB Screen and connections
-    Screen('CloseAll');
-    IOPort('CloseAll');
-    pnet('closeall');
-    ShowCursor;
-    Priority(0);
+    
+    % --- Main loop ---
+    
+    time.start=GetSecs;
+    fprintf('[Chrono] Start: %.3f. \n', time.start);
+    
+    
+    % Change the blend function to draw an antialiased fixation
+    % point in the centre of the screen.
+    Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+    % Display fixation cross.
+    totDur=S.prt.parameters.block_isi;
+    displayFixCrossWithDuration(window, fCross, scr.white, totDur)
+    
+    totDur
+    fprintf('[Chrono] End first fixation cross: %.3f. \n', GetSecs-time.start);
+    
+    for trialIdx = 1:totalTrials
+        
+        hasResponded=0;
+        response=[];
+        
+        % -- Contrast presentation --
+        
+        % Get contrast value.
+        contrast=S.prt.events{trialIdx,2};
+        
+        % Display contrast.
+        
+        % Set the right blend function for drawing the gabors.
+        Screen('BlendFunction', window, 'GL_ONE', 'GL_ZERO');
+        
+        % Draw the Gabor.
+        Screen('DrawTexture', window, gabortex, [], [], gabor.angle, [], [], ...
+            [], [], kPsychDontDoRotation, [gabor.phase+180, gabor.spatFreq, gabor.sigma, contrast, gabor.aspectratio, 0, 0, 0]);
+        
+        % Flip to the screen
+        Screen('Flip', window);
+        
+        % Wait for...
+        % waitUntil=GetSecs+S.prt.parameters.trial_duration;
+        
+        totDur=totDur+S.prt.parameters.trial_duration;
+        
+        %while GetSecs<waitUntil
+        while GetSecs<totDur+time.start
+            [response, hasResponded]=waitResponse(S,...
+                response,...
+                hasResponded,...
+                time.start);
+        end
+        
+        totDur
+        fprintf('[Chrono] Contrast display: %.3f. \n', GetSecs-time.start);
+        
+        % -- Fixation cross presentation --
+        
+        % Change the blend function to draw an antialiased fixation
+        % point in the centre of the screen.
+        Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+        
+        % Display fixation cross in the center of the screen.
+        Screen('DrawLines',...
+            window,...
+            fCross.CrossCoords,...
+            fCross.lineWidthPix,...
+            scr.white,...
+            [fCross.xCenter fCross.yCenter]);
+        
+        % Flip to the screen
+        Screen('Flip',window);
+        
+        % Fixation Should last until the end of the pre-determined
+        % inter stimulus interval for the trialIdx block: 'event{k,3}'
+        
+        % Wait for...
+        % waitUntil=GetSecs+S.prt.events{trialIdx,3};
+        
+        totDur=totDur+S.prt.events{trialIdx,3};
+        %while GetSecs<waitUntil
+        while GetSecs<totDur+time.start
+            [response, hasResponded]=waitResponse(S,...
+                response,...
+                hasResponded,...
+                time.start);
+        end
+        
+        % end of main loop
+        log(trialIdx).response=response;
+        log(trialIdx).contrast=contrast;
+        
+        totDur
+        fprintf('[Chrono] Fixation Cross display: %.3f. \n', GetSecs-time.start);
+    end
+    
+    time.finished=GetSecs-time.start;
+    fprintf('[Chrono] Stim End: %.3f. \n', time.finished);
+    
+    fprintf('The experiment is finished.\n');
+    fprintf('Closing setup.\n\n');
+    
+    
+    % Elements to close stim, clear vars, etc.
+    closeStim(window);
+    
+    fprintf('Total duration of the stimuli was %.3f.\n', time.finished);
     
 catch me
+    % Elements to close stim, clear vars, etc.
+    closeStim(window);
     
-    % Close PTB Screen
-    Screen('CloseAll');
-    ShowCursor;
-    Priority(0);
+    % Display error.
     rethrow(me);
-    
-    % ----------------------
     
 end
 

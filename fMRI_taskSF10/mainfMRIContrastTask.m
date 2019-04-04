@@ -6,7 +6,6 @@ Screen('Close All');
 pnet('closeall');
 sca;
 
-
 clear all;
 close all;
 clc;
@@ -25,18 +24,23 @@ addpath(genpath('Protocols'));
 % Create participant variable with psychopsysics and meta data.
 ID='sub-NECSUS-UC001';
 NT=1; % Near Threshold without GLARE.
-GT=1; % Threshold with GLARE.
-GNT=1; % Near Threshold with GLARE.
+GT=2; % Threshold with GLARE.
+GNT=2.5; % Near Threshold with GLARE.
 PARTICIPANT=setParticipant(ID, NT, GT, GNT);
 
 VIEWINGDISTANCE=156.5; % 40; debug
 SPATIALFREQ=10;
 
+RESPONSEBOXCOM='COM3';
+SYNCBOXCOM='COM2';
 
 % ---- CONDITIONS / STIMULI ----
 
 DEBUG=1;
 BACKGROUNDLUM=20;
+
+
+%% CREATE STIM
 
 % get the conditions for each participant
 [conditions]=setConditions(PARTICIPANT);
@@ -70,50 +74,57 @@ load(locationFile,'-mat','chaos','nrepeats','tr','tr_factor');
 [~,pName,~]=fileparts(pFilename);
 
 % Create the complete protocol with the subject-specific contrast values.
-stimuliPrt=createProtocol(chaos,...
+S.prt=createProtocol(chaos,...
     nrepeats,...
     tr,...
     tr_factor,...
     pName,...
     conditions,...
-    Participant);
+    PARTICIPANT);
 
 % --- PREPARATION ---
+% Box connectivity.
+S.responseBoxCom=RESPONSEBOXCOM;
+S.syncBoxCom=SYNCBOXCOM;
 
-if DEBUG
+S.debug=DEBUG;
+
+if S.debug
     % input hack (for debugging)
-    stimuliPrt.iomethod=0; % 0-keyboard | 1-lumina response
+    S.iomethod=0; % 0-keyboard | 1-lumina response
     % Turn on (1) or off (0) synchrony with scanner console
-    stimuliPrt.syncbox=0;
+    S.syncbox=0;
 else
-    stimuliPrt.iomethod=1;
-    stimuliPrt.syncbox=1;
+    S.iomethod=1;
+    S.syncbox=1;
 end
 
 % Keyboard "normalization" of Escape key.
 KbName('UnifyKeyNames');
-stimuliPrt.escapekey = KbName('Escape');
+S.escapekey = KbName('Escape');
 % BackgroundLum definiton of variable - bg color.
-stimuli.backgroundLum=BACKGROUNDLUM;
+S.backgroundLum=BACKGROUNDLUM;
 
+% DEBUG - keyboard or Response box.
+S.keys=iomethod(S.iomethod);
 
 % Create text box with summary information about the experiment and wait
 %   for mouse click to continue the program and enter the experiment
-text = [protocolName,...
-    'protocolName |',num2str(stimuliPrt.timecourse.total_volumes),...
+text = [pFilename,...
+    ' protocolName |',num2str(S.prt.timecourse.total_volumes),...
     ' vols | ',...
-    num2str(stimuliPrt.timecourse.total_time),...
+    num2str(S.prt.timecourse.total_time),...
     ' secs'];
 
 uiwait(msgbox(text,'ContrastTask','modal'));
 
 %% Run STIMULI 
 % run experiment and return 'logdata' with responses
-[logdata] = runStim(stimuliPrt);
+[logdata] = runStim(S, scr, gabor);
 
-%% Save data
+m%% Save data
 % Asks for saving the data
-saveData(Participant, stimuliPrt,logdata, protocolName);
+saveData(PARTICIPANT, S, logdata, pFilename);
 
 
 
