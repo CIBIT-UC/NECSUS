@@ -30,7 +30,6 @@ PARTICIPANT=setParticipant(ID, NT, GT, GNT);
 
 VIEWINGDISTANCE=156.5; % 40; debug
 SPATIALFREQ=10;
-
 RESPONSEBOXCOM='COM3';
 SYNCBOXCOM='COM2';
 
@@ -39,40 +38,34 @@ SYNCBOXCOM='COM2';
 DEBUG=1;
 BACKGROUNDLUM=20;
 
+S=struct();
 
 %% CREATE STIM
 
 % get the conditions for each participant
 [conditions]=setConditions(PARTICIPANT);
 
-% --- LCD monitor ---
-scr=scrInfo(VIEWINGDISTANCE);
+S.debug=DEBUG;
 
 % --- GABOR INFORMATION ---
 gabor=gaborInfo(SPATIALFREQ);
 
-
 % ---- PROTOCOL CREATION ----
-
 % Get fMRI RUN protocol.
 [pFilename, pPath]=uigetfile({'*.lospp','LoSpP Protocol (*.lospp)';}...
     ,'Open Protocol',...
     'Protocols/');
-
 % Confirmation of fMRI PROTOCOL file for the EVENT-RELATED experiment
 % returns an error.
 if ( ~ischar(pPath) || ~ischar(pFilename) )
     errordlg('You must choose a file!','Error','modal');
     return
 end
-
 % Path for the file and load the experiment parameters.
 locationFile=strcat(pPath,pFilename);
 load(locationFile,'-mat','chaos','nrepeats','tr','tr_factor');
-
 % Protocol name.
 [~,pName,~]=fileparts(pFilename);
-
 % Create the complete protocol with the subject-specific contrast values.
 S.prt=createProtocol(chaos,...
     nrepeats,...
@@ -87,16 +80,18 @@ S.prt=createProtocol(chaos,...
 S.responseBoxCom=RESPONSEBOXCOM;
 S.syncBoxCom=SYNCBOXCOM;
 
-S.debug=DEBUG;
-
 if S.debug
     % input hack (for debugging)
     S.iomethod=0; % 0-keyboard | 1-lumina response
     % Turn on (1) or off (0) synchrony with scanner console
     S.syncbox=0;
+    % --- debug monitor ---
+    scr=scrInfo(50);
 else
     S.iomethod=1;
-    S.syncbox=1;
+    S.syncbox=1; 
+    % --- MR monitor ---
+    scr=scrMRInfo(VIEWINGDISTANCE);
 end
 
 % Keyboard "normalization" of Escape key.
@@ -122,7 +117,7 @@ uiwait(msgbox(text,'ContrastTask','modal'));
 % run experiment and return 'logdata' with responses
 [logdata] = runStim(S, scr, gabor);
 
-m%% Save data
+%% Save data
 % Asks for saving the data
 saveData(PARTICIPANT, S, logdata, pFilename);
 

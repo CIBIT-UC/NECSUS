@@ -2,11 +2,20 @@
 function saveData(participant, stimuliPrt,logdata, pName)
 
 % Asks for filename and folder to save 'logdata'
-[filename, pathname] = uiputfile( {'*.lolog','LoSP/P Participant (*.lolog)';},'Save Participant',strcat('Output/',num2str(participant.Information.ID),'/',num2str(participant.Information.ID),'_LOG_',pName,'_',datestr(now,'HHMM_ddmmyy')));
+[filename, pathname]=uiputfile({'*.mat','mat-File';},...
+    'Save Participant',...
+    strcat('Output/',...
+        num2str(participant.ID),...
+        '/',...
+        num2str(participant.ID),...
+        '_LOG_',...
+        pName,...
+        '_',...
+        datestr(now,'HHMM_ddmmyy')));
 
 if ( ischar(pathname) || ischar(filename) )
     completepath = strcat(pathname,filename);
-    save(completepath,'Participant','StimuliPrt','logdata')
+    save(completepath,'participant','stimuliPrt','logdata')
    
 else
     % if the user does not choose a valid filename or folder it warns
@@ -16,7 +25,7 @@ else
     switch exitEvents
         case 'Yes'
             % Ask for saving data again
-            saveData(participant, stimuliPrt,logdata, pName)
+            saveData(participant,stimuliPrt,logdata,pName)
 
         case 'No'
             % Exit the EVENTS experiment without saving 'logdata'

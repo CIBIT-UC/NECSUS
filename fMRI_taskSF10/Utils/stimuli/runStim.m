@@ -8,24 +8,31 @@ function [log] = runStim(S, scr, gabor)
 % Trick suggested by the PTB authors
 syncTrick();
 
-% Load gamma corrected scale for MR pojector
-load(fullfile(pwd,'Utils','luminance','invertedCLUTMRscanner.mat'));
 
 try
     % -- if DEBUG off.
     if ~S.debug
-        % Open SerialPorts.
+        % Load gamma corrected scale for MR pojector
+        load(fullfile(pwd,'Utils','luminance','invertedCLUTMRscanner.mat'));
         
+        % Open SerialPorts.
         % SyncBox.
         syncBoxHandle=IOPort('OpenSerialPort',...
             S.syncBoxCom,...
             'BaudRate=57600 DataBits=8 Parity=None StopBits=1 FlowControl=None');
         IOPort('Flush',syncBoxHandle);
-        
         % ResponseBox.
         responseBoxHandle=IOPort('OpenSerialPort',...
             S.responseBoxCom);
         IOPort('Flush',responseBoxHandle);
+        
+         % Stimuli presentation loop.
+        totalTrials=length(S.prt.events);
+       
+    else
+        % Load gamma corrected scale for LCD monitor
+        load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
+        totalTrials=5;
     end
     
     % Set "real time priority level"
@@ -35,19 +42,17 @@ try
     % Transform luminance required to rgb input.
     rgbInput=luminanceToRgb(S.backgroundLum);% bits resolution - 8;
     
-    
     %  ---- START DISPLAY ----
     
     % SCREEN SETUP
-    
     % Get the screen numbers
-    screens = Screen('Screens');
+    screens=Screen('Screens');
     
-    %%%%%%%%% Be careful.%%%%%%%%%%
+    % Be careful. --------------
     Screen('Preference', 'SkipSyncTests', 1);
     
     % Draw to the external screen if avaliable
-    scr.screenNumber=1;
+    scr.screenNumber=1;% max(screens);
     
     % Open an on screen window
     [window, windowRect] = Screen('OpenWindow',...
@@ -59,41 +64,37 @@ try
         [],...
         0);
     
-    % MONITOR SETUP / Linearize monitor gamma.
-    
-    % upload inverse gamma function to screen - linearize lum.
+    % Linearize monitor gamma.
+    % Upload inverse gamma function to screen - linearize lum.
     originalCLUT=Screen('LoadNormalizedGammaTable',...
         window,...
         repmat(invertedCLUT, [3,1])' );
-    
     % Screen debug.
     save('debug.mat','originalCLUT')
-    
     % Define white.
     scr.white = WhiteIndex(scr.screenNumber);
-    
     % Get the size of the on screen window
-    [scr.screenXpixels, scr.screenYpixels] = Screen('WindowSize', window);
-    % screenXpixels=1024;
-    % screenYpixels=768;
+    [scr.screenXpixels, scr.screenYpixels]=Screen('WindowSize', window);
     
-    % Fixation cross
+    
+    % Fixation cross elements.
     % Get the centre coordinate of the window and create cross.
-    [xCenter, yCenter]=RectCenter(windowRect);
     [fCross]=designFixationCross();
-    fCross.xCenter=xCenter;
-    fCross.yCenter=yCenter;
+    [fCross.xCenter, fCross.yCenter]=RectCenter(windowRect);
     
     % ---- PARAMETER SETUP ----
-    
+    % GABOR
     % Gabor dimensions.
     gabor.gaborDimPix=getGaborDimPix(scr,...
         scr.viewingDistance,...
         gabor.gaborDimDegree);
-    
-    % Sigma of Gaussian.
-    gabor.sigma=gabor.gaborDimPix/5;
-    
+        % Sigma of Gaussian.
+    gabor.sigma=gabor.gaborDimPix/5;  
+    % Gabor creation based on desired spatial frequency.
+    gabor.spatFreq=computeSpatialFrequency(scr.screenHeight,...
+        scr.screenYpixels,...
+        scr.viewingDistance,...
+        gabor.spatFreqCdM);
     % Build a procedural gabor texture.
     gabortex=CreateProceduralGabor(window,...
         gabor.gaborDimPix,...
@@ -103,25 +104,15 @@ try
         [],...
         []);
     
-    % Desired spatial frequency.
-    desiredSpatFreq=S.prt.events{1,4};
-    % Gabor creation based on desired spatial frequency.
-    gabor.spatFreq=computeSpatialFrequency(scr.screenHeight,...
-        scr.screenYpixels,...
-        scr.viewingDistance,...
-        desiredSpatFreq);
-    
-    
-    % Stimuli presentation loop.
-    totalTrials=5;%length(S.prt.events);
-    log=struct();
+
     
     %-----------------------------------------------------------------%
     %                      EXPERIMENTAL LOOP                          %
     %-----------------------------------------------------------------%
     
     % --- Stimuli presentation ----
-    
+    log=struct();
+     
     % DEBUG? SYNCBOX trigger
     if ~S.debug
         [gotTrigger, log.triggerTimeStamp]=waitForTrigger(syncBoxHandle,1,1000);
