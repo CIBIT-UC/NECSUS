@@ -24,7 +24,7 @@ load('Configs_NECSUS.mat')
 %% Set configs.
 
 % Participant's name.
-subjectName = 'sub-NECSUS-UC01';
+subjectName = 'sub-NECSUS-UC001';
 % Session's name.
 sessionName = 'ses-01';
 % Identify ID of participant in configs file.
@@ -46,7 +46,7 @@ datasetConfigs.sessionCode=sessionName;
 datasetConfigs.subjectDataTypeOrder=subjectDataTypeOrder;
 datasetConfigs.subjectRunsOrder=subjectRunsOrder;
 
-datasetConfigs.rawData = 'C:\Users\bdireito\Data\NECSUS-Raw\ALZIRAQUATORZE';
+datasetConfigs.rawData = 'C:\Users\bdireito\Data\NECSUS-Raw\SUBNECSUSUC001';
 
 %% Set preprocessing presets.
 % Automatic IIHC

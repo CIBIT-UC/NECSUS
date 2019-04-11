@@ -48,21 +48,23 @@ if length(series.sNumbers)~=nRuns
     % Evaluate if number of runs greater than identified in configs.
     if length(sLeftInArr)>nRuns
         
-        fprintf('[debug:createDicomFolderStructure] More series than runs identified in configs.\n');
+        fprintf(['[debug:createDicomFolderStructure] More series than '
+            'runs identified in configs.\n']);
         
         % Add to ignore if number of volumes different from configs.
-        sToRemove = series.sNumbers(ismember(series.sVolumes, dConfigs.volumes)==0);
+        sToRemove = seriesNumbers(ismember(seriesVolumes, dConfigs.volumes)==0);
         
         
         % --- Check for multiple anat runs ---
-        aRunsIdxs=checkMultipleAnat(dConfigs,series);
+        aRunsIdxs=checkMultipleAnat(dConfigs);
         
         % Remove anat runs from array with remaining runs.
         sLeftInArr(aRunsIdxs)=[];
         
+        
         % --- Check for func runs ---
-        fRunsIdxs=checkMultipleFunc(dConfigs,series,sLeftInArr);
-                
+        
+        fRunsI
         
         % --- Remove series ---
         % If number of runs different from configs user must validate

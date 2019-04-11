@@ -12,7 +12,7 @@ datasetConfigs = struct();
 
 % Participant ID.
 datasetConfigs.subjects = {
-    'sub-NECSUS-UC01', 'sub-NECSUS-UC02', 'sub-NECSUS-UC03'
+    'sub-NECSUS-UC001', 'sub-NECSUS-UC002', 'sub-NECSUS-UC003'
     };
 
 % Session ID.

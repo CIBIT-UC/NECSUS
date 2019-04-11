@@ -130,7 +130,6 @@ try
     
     
     % --- Main loop ---
-    
     time.start=GetSecs;
     fprintf('[Chrono] Start: %.3f. \n', time.start);
     
