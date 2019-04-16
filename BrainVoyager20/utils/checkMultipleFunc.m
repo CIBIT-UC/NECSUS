@@ -1,4 +1,4 @@
-function [fRunsIdxs] = checkMultipleFunc(dConfigs, s, sLeftInArr)
+function [fRunsIdxs,funcID] = checkMultipleFunc(dConfigs, s, sLeftInArr)
 
 % Func projects id.
 funcDTID=find(strcmp(dConfigs.dataTypes,'func')); % 1 anat, 2 func

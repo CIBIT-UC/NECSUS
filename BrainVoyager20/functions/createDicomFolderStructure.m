@@ -29,7 +29,6 @@ end
 
 files = {D.name};
 
-
 %% identify number of runs in DICOM files
 series=checkAvailableRuns(files);
 
@@ -58,11 +57,11 @@ if length(series.sNumbers)~=nRuns
         aRunsIdxs=checkMultipleAnat(dConfigs,series);
         
         % Remove anat runs from array with remaining runs.
-        sLeftInArr(aRunsIdxs)=[];
+        sLeftInArr(find(ismember(sLeftInArr,aRunsIdxs)))=[];
         
         % --- Check for func runs ---
-        fRunsIdxs=checkMultipleFunc(dConfigs,series,sLeftInArr);
-                
+        [fRunsIdxs,funcDefault] =checkMultipleFunc(dConfigs,series,sLeftInArr);
+        
         
         % --- Remove series ---
         % If number of runs different from configs user must validate
@@ -75,26 +74,38 @@ if length(series.sNumbers)~=nRuns
                 's');
             
             if ~ismember( str2double(inputStr),sLeftInArr )
-                fprintf('[debug:createDicomFolderStructure] ERROR: Incorrect series number.\n');
+                fprintf(['[debug:createDicomFolderStructure]'
+                    ' ERROR: Incorrect series number.\n']);
             else
-                sToRemove = str2double(inputStr) ; % only one at a time
-                fprintf('[debug:createDicomFolderStructure] Ignoring files with series number %s.\n', num2str(sToRemove'));
-                sLeftInArr(sLeftInArr == sToRemove) = [];
-                fprintf('[debug:createDicomFolderStructure] %s extra series remain (func.).\n',  num2str(length(sLeftInArr) - numFuncRuns));
-                if length(sToRemove) == (length (seriesNumbers) - nRuns)
+                % Series to remove from array.
+                sToRemove = str2double(inputStr) ;
+                fprintf(strcat('[debug:createDicomFolderStructure]',...
+                    ' Ignoring files with series number %s.\n'),...
+                    inputStr);
+                sLeftInArr(sLeftInArr==sToRemove)=[];
+                
+                % Remaining series in array.
+                fprintf(strcat('[debug:createDicomFolderStructure]',...
+                    ' %s extra series remain (func.).\n'),...
+                    num2str(length(sLeftInArr)-length(funcDefault)));
+                
+                % If number of functional runs equals the predefined.
+                if sLeftInArr==length(funcDefault)
                     removeFinished = 1;
                     break,% confirm
                 end
             end
             
-            inputStr = input('[debug:createDicomFolderStructure] Continue to remove series (y/n): ','s');
+            inputStr = input(strcat('[debug:createDicomFolderStructure]',...
+                ' Continue to remove series (y/n): '),...
+                's');
             if inputStr == 'n'
                 boolInput = 1;
             end
         end
         
         % Evaluate if number of runs fewer than identified in configs.
-    elseif length( seriesNumbers) < length(dConfigs.runs)
+    elseif length(series.sNumbers) < length(dConfigs.runs)
         fprinf('[debug:createDicomFolderStructure] Unsufficient data. Less series than runs identified in configs.\n')
         fprinf('[debug:createDicomFolderStructure] Proceed with caution.\n')
     end
@@ -112,24 +123,6 @@ boolInput = false;
 
 % if exist - do not create/overwrite/stop and re-check
 if ~exist( projectFolder,'dir') == 7
-    
-    % %     while ~boolInput
-    % %         x = input('[debug:createDicomFolderStructure] Project Folder already exists. Do you wish to overwrite (Y), stop (N) or proceed (P)?','s');
-    % %         switch lower(x)
-    % %             case 'y'
-    % %                 rmdir(projectFolder,'s')
-    % %                 mkdir(projectFolder)
-    % %                 boolInput = true;
-    % %             case 'n'
-    % %                 return
-    % %             case 'p'
-    % %                 boolInput = true;
-    % %             otherwise
-    % %                 fprintf('[debug:createDicomFolderStructure] ERROR: Invalid input.')
-    % %         end
-    % %     end
-    % % else
-    
     mkdir(projectFolder)
 end
 
@@ -138,23 +131,6 @@ end
 partFolder = fullfile( projectFolder, char(dConfigs.subjectCode));
 
 if ~exist(partFolder,'dir') == 7
-    % %     while ~boolInput
-    % %         x = input('[debug:createDicomFolderStructure] Participant''s folder already exists. Do you wish to overwrite (Y), stop (N) or proceed (P)?','s');
-    % %         switch lower(x)
-    % %             case 'y'
-    % %                 rmdir(partFolder,'s')
-    % %                 mkdir(partFolder)
-    % %                 boolInput = true;
-    % %             case 'n'
-    % %                 return
-    % %             case 'p'
-    % %                 success = true;
-    % %                 return
-    % %             otherwise
-    % %                 fprintf('[debug:createDicomFolderStructure] ERROR: Invalid input.')
-    % %         end
-    % %     end
-    % % else
     mkdir(partFolder)
 end
 
@@ -163,44 +139,89 @@ end
 sessFolder = fullfile( partFolder, char(dConfigs.sessionCode));
 
 if ~exist(sessFolder,'dir') == 7
-    % %     while ~boolInput
-    % %         x = input('[debug:createDicomFolderStructure] Session''s folder already exists. Do you wish to overwrite (Y), stop (N) or proceed (P)?','s');
-    % %         switch lower(x)
-    % %             case 'y'
-    % %                 rmdir(sessFolder,'s')
-    % %                 mkdir(sessFolder)
-    % %                 boolInput = true;
-    % %             case 'n'
-    % %                 return
-    % %             case 'p'
-    % %                 success = true;
-    % %                 return
-    % %             otherwise
-    % %                 fprinf('[debug:createDicomFolderStructure] ERROR: Invalid input.')
-    % %         end
-    % %     end
-    % % else
     mkdir(sessFolder)
 end
 %%
 % ---- Check and create a folder for each run ----
 % Run folder - session folder + data type
 
-% nRuns = number of runs
-for r = 1:nRuns
+
+% Create Anatomical folders / aRunsIdxs.
+for a = 1:length(aRunsIdxs)
+    
+    dataType='anat';
+    
+    % {'T1w'  'retinotopia-8bar'  'glare'  'noglare'}
+    acqDescr=dConfigs.task{1};
+    
+    % Get files idxs from run r.
+    filesIdxs=find(series.runIdxPerFile==aRunsIdxs(a));
+    
+    % Read first file.
+    dcmFileInfo=dicominfo(fullfile(dConfigs.rawData, files{filesIdxs(1)}));
+    
+    % Set name of anat run according to number of project
+    % previously created
+    
+    % --------------
+    % sub-<participant_label>/[ses-<session_label>/]
+    %   anat/
+    %   sub-<participant_label>[_ses-<session_label>][_acq-<label>][_ce-<label>][_rec
+    %   -<label>][_run-<index>][_mod-<label>]_<modality_label>.nii[.gz]
+    
+    % Name of the anatomical project.
+    anatProjName=[dConfigs.subjectCode '_' ...
+        dConfigs.sessionCode '_' ...
+        'run-' num2str(a) '_' ...
+        acqDescr];
+    
+    folderPath_=fullfile(sessFolder,...
+        dataType,...
+        ['run-' num2str(a) '_' acqDescr]);
+    
+    if ~(exist(folderPath_,'dir') == 7)
+        
+        % Create folder structure.
+        mkdir(folderPath_);
+        mkdir(fullfile(folderPath_,'PROJECT'));
+        
+        % Create a copy of the raw files.
+        anatProject = fullfile(folderPath_,'DATA');
+        mkdir(anatProject);
+        
+        % Copy data files
+        for f = filesIdxs'
+            [success]=copyfile(fullfile(dConfigs.rawData, files{f}),...
+                anatProject);
+        end
+    else
+        fprintf('[createFolderStructure] !---> folder ** %s ** previously created. \n',...
+            anatProjName)
+    end
+end
+
+
+for r = 1:length(sLeftInArr)
+    
+    % Get dataType (anat/func) and dataset description.
+    dataType='func';
+    
+    funcPreDef=find(dConfigs.subjectRunsOrder~=1);
+    
+    if length(sLeftInArr)~=length(funcPreDef)
+        disp('WARNING! number of functional runs different from expected'); 
+    end
     
     % ---- BIDS ----
     
     % ---
     % sub-<participant_label>[_ses-<session_label>][_acq-<label>][_rec-<label>][_run-<index>]_<modality_label>.nii[.gz]
     % ---
+    acqDescr=dConfigs.task{dConfigs.subjectRunsOrder(funcPreDef(r))};
+    fprintf('[createFolderStructure] Series num: %i, data type: %s \n',sLeftInArr(r),acqDescr)
     
-    % Get dataType (anat/func) and dataset description
-    dataType=dConfigs.dataTypes{dConfigs.subjectDataTypeOrder(r)};
-    acqDescr=dConfigs.task{dConfigs.subjectRunsOrder(r)};
-    
-    % Folder with project
-    dataTypeRoot = fullfile (sessFolder, dataType);
+    % Folder with functional data.
+    dataTypeRoot=fullfile(sessFolder,dataType);
     
     % check if it was previously created
     % Try to create dataType folder
@@ -210,128 +231,59 @@ for r = 1:nRuns
         fprintf( '[debug:createDicomFolderStructure] folder ** %s ** was previously created. \n', dataType )
     end
     
-    % Select according to dataType
-    switch dataType
+    % Check for func runs previously created of same type.
+    funcProjIdx=numel(find(dConfigs.subjectRunsOrder(funcPreDef(1:r))==dConfigs.subjectRunsOrder(funcPreDef(r))));
+    
+    % Name of the anatomical project.
+    funcProjName = [...
+        dConfigs.subjectCode ...
+        '_' ...
+        dConfigs.sessionCode ...
+        '_' ...
+        'run-' num2str(funcProjIdx) ...
+        '_' ...
+        acqDescr...
+        ];
+    
+    % ---
+    % sub-<participant_label>[_ses-<session_label>]_task-<task_label>[_acq-<label>][_rec-<label>][_run-<index>]_bold.nii[.gz]
+    % ---
+    
+    % Get files idxs from run
+    filesIdxs = find(series.runIdxPerFile==sLeftInArr(r));
+    
+    % Read first file
+    dicomFileInfo = dicominfo( fullfile(dConfigs.rawData, files{filesIdxs(1)}) );
+    
+    % If type of run = func
+    if ~(exist(fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)]),'dir') == 7)
         
-        % If type of *anat*
-        case 'anat'
-            
-            % Identify the name of the run, and create corresponding
-            % folder/project
-            
-            % Get files idxs from run r.
-            filesIdxs=find(series==seriesNumbers(r));
-            
-            % Read first file.
-            dicomFileInfo=dicominfo( fullfile(dConfigs.rawData, files{filesIdxs(1)}) );
-            
-            % Set name of anat run according to number of project
-            % previously created
-            
-            % --------------
-            % sub-<participant_label>/[ses-<session_label>/]
-            %   anat/
-            %   sub-<participant_label>[_ses-<session_label>][_acq-<label>][_ce-<label>][_rec
-            %   -<label>][_run-<index>][_mod-<label>]_<modality_label>.nii[.gz]
-            
-            % Check for anat runs previously created.
-            t = dir(fullfile( sessFolder, dataType));
-            numAnat = numel (t([t(:).isdir]))-2;
-            
-            % Number of anat project.
-            anatProjIdx=numAnat+1;
-            % Name of the anatomical project.
-            anatProjName = [...
-                dConfigs.subjectCode ...
-                '_' ...
-                dConfigs.sessionCode ...
-                '_' ...
-                'run-' num2str(anatProjIdx) ...
-                '_' ...
-                acqDescr...
-                ];
-            
-            if ~(exist(fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(anatProjIdx)]),'dir') == 7)
-                % Create folder structure.
-                mkdir(fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(anatProjIdx)]));
-                mkdir(fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(anatProjIdx)],'PROJECT'));
-                % Crete a copy of the raw files.
-                anatProject = fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(anatProjIdx)],'DATA');
-                mkdir(anatProject);
-                
-                % Copy data files
-                for f = filesIdxs'
-                    [success]=copyfile(fullfile(dConfigs.rawData, files{f}),...
-                        anatProject);
-                end
-            else
-                fprintf('[createFolderStructure] !---> folder ** %s ** previously created. \n',...
-                    anatProjName)
-            end
-            
-            % If type of run = functional
-        case 'func'
-            
-            % Check for func runs previously created of same type.
-            funcProjIdx= numel(find(dConfigs.subjectRunsOrder(1:r)==dConfigs.subjectRunsOrder(r)));
-            
-            % Name of the anatomical project.
-            funcProjName = [...
-                dConfigs.subjectCode ...
-                '_' ...
-                dConfigs.sessionCode ...
-                '_' ...
-                'run-' num2str(funcProjIdx) ...
-                '_' ...
-                acqDescr...
-                ];
-            
-            % %             if ~(exist(fullfile(sessFolder,dataType,[acqDescr '_ run-' num2str(funcProjIdx)]),'dir') == 7)
-            % %                 mkdir(fullfile(sessFolder,dataType,[acqDescr '_ run-' num2str(funcProjIdx)]));
-            % %             else
-            % %                 fprintf('[createFolderStructure] !---> folder ** %s ** previously created \n', dataType)
-            % %             end
-            
-            % ---
-            % sub-<participant_label>[_ses-<session_label>]_task-<task_label>[_acq-<label>][_rec-<label>][_run-<index>]_bold.nii[.gz]
-            % ---
-            
-            % Get files idxs from run
-            filesIdxs = find(series == seriesNumbers(r));
-            
-            % Read first file
-            dicomFileInfo = dicominfo( fullfile(dConfigs.rawData, files{filesIdxs(1)}) );
-            
-            % If type of run = func
-            if ~(exist(fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)]),'dir') == 7)
-                
-                % Create folder structure.
-                mkdir(fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)]));
-                % Project results structure.
-                projectFolder=fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)],'PROJECT');
-                mkdir(projectFolder);
-                % Data copy folder.
-                dataFolder=fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)],'DATA');
-                mkdir(dataFolder);
-                
-                % Copy data files
-                for f = filesIdxs'
-                    [ success ] = copyfile ( fullfile(dConfigs.rawData, files{f}) , dataFolder);
-                end
-                
-                % Create the rest of the project data analysis folder structure.
-                mkdir(fullfile(projectFolder,'PROCESSING'));
-                mkdir(fullfile(projectFolder,'ANALYSIS'));
-                
-            else
-                fprintf('[createFolderStructure] !---> folder ** %s ** previously created. \n',...
-                    funcProjName)
-            end
-            
+        % Create folder structure.
+        mkdir(fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)]));
+        % Project results structure.
+        projectFolder=fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)],'PROJECT');
+        mkdir(projectFolder);
+        % Data copy folder.
+        dataFolder=fullfile(sessFolder,dataType,[acqDescr '_run-' num2str(funcProjIdx)],'DATA');
+        mkdir(dataFolder);
+        
+        % Copy data files
+        for f = filesIdxs'
+            [ success ] = copyfile ( fullfile(dConfigs.rawData, files{f}) , dataFolder);
+        end
+        
+        % Create the rest of the project data analysis folder structure.
+        mkdir(fullfile(projectFolder,'PROCESSING'));
+        mkdir(fullfile(projectFolder,'ANALYSIS'));
+        
+    else
+        fprintf('[createFolderStructure] !---> folder ** %s ** previously created. \n',...
+            funcProjName)
     end
     
+    % ------------------- TO REVIEW  -----------------------------------
+    
 end
-
 
 success = true;
 disp('[createFolderStructure] Folder structure creation completed.')
