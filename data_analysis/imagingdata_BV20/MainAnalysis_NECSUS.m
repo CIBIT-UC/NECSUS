@@ -130,6 +130,8 @@ anatProjects=dir(fullfile(configs.dataRootSession,'anat'));
 % Remove '.', '..' from struct.
 anatProjects(1:2)=[];
 
+%%
+
 % Iterate through all runs in config.
 for vmrProjectIdx=1:numel(anatProjects)
     
@@ -223,7 +225,7 @@ configs.averageAnatProject=fullfile(anatProjects(1).folder,...
 
 %% -- Functional Project Preparation
 
-fprintf('\n-- Create functional projects. \n');
+
 % -----
 % Check for multiple functional runs
 % -----
@@ -237,6 +239,9 @@ numFunctionalRuns=length( functionalRuns );
 
 %% -- Functional Project Creation
 sliceVector = cell(numFunctionalRuns);
+
+fprintf('\n-- Create functional projects. \n');
+
 for f = 1 : numFunctionalRuns
     % Rename DICOM
     functFiles = dir(fullfile(configs.dataRootSession, ...
