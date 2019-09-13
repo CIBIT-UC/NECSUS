@@ -1,5 +1,5 @@
 % pRF analysis - 
-%% SOP 6.1, 6.2
+%% SOP 4.
 
 [filepath,filename,ext] = fileparts(configs.averageAnatProject);
 
