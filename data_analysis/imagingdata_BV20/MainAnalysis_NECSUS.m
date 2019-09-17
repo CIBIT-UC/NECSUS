@@ -13,7 +13,7 @@ load('Configs_NECSUS.mat')
 %% Set configs.
 
 % Participant's name.
-subjectName='sub-NECSUS-UC004';
+subjectName='sub-NECSUS-UC003';
 % Session's name.
 sessionName='ses-01';
 % Identify ID of participant in configs file.
@@ -180,8 +180,7 @@ for vmrProjectIdx=1:numel(anatProjects)
                     kInputBool = true;
                     disp('---> Press Enter when done.');
                     pause;
-                    configs.ATAL = false;
-                    configs.MTAL = true;
+                    configs.ATAL = true;
                 otherwise
                     disp('---> Repeating...')
             end
