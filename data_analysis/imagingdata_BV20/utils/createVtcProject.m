@@ -9,7 +9,7 @@ function [  ] = createVtcProject( configs, vtcConfigs, vmrProject, functRunName 
 %Data type: high-precision data (float format)= 2 / integer format = 1
 dataType = 2;
 
-resolution = 3; %default
+resolution = 2; %3; %default
 interpolation = 1; %value 0 will select nearest neighbor interpolation, value 1 trilinear interpolation and value 2 will select sinc interpolation
 bbithresh = 100;
 

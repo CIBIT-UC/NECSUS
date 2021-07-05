@@ -1,4 +1,9 @@
-% mesh analysis - 
+% mesh analysis -
+% Create meshes (automatic segmentation)
+% -> Always adjust contrast values of TAL file and save before automatic
+% segmentation.
+% Create MTC files
+
 %% SOP 6.1, 6.2
 
 % Initialize COM

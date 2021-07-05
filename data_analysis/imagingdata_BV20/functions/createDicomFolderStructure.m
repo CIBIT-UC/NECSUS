@@ -56,7 +56,7 @@ if length(series.sNumbers)~=nRuns
     % Evaluate if number of runs greater than identified in configs.
     if length(sLeftInArr)>nRuns-2 % anatomical runs
         
-        fprintf(['[debug:createDicomFolderStructure] More functional '
+        fprintf(['[debug:createDicomFolderStructure] More functional '...
             'series than functional runs identified in configs.\n']);
         % --- Check for func runs ---
         [fRunsIdxs,funcDefault]=checkMultipleFunc(dConfigs,series,sLeftInArr);

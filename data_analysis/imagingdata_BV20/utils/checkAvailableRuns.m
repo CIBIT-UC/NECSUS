@@ -23,7 +23,7 @@ end
 s.sNumbers = unique(s.runIdxPerFile);
 
 % --- Get number of volumes per series ---
-s.sVolumes = hist(s.runIdxPerFile,length(1:s.sNumbers(end)));
+s.sVolumes = hist(s.runIdxPerFile,length(1:s.sNumbers(end))); %hist
 % Remove series with zero elements.
 s.sVolumes = s.sVolumes(s.sVolumes~=0);
 
