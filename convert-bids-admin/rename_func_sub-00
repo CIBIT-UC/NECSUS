@@ -1,0 +1,17 @@
+#!/bin/sh
+ROOT_PATH='/home/brunomiguel/Documents/data/BIDS_vswp/sub*'
+
+for sub in $ROOT_PATH
+do
+  ROOT_SUBJECT=$sub/ses-001;
+  ROOT_FUNC=${ROOT_SUBJECT}/func;
+
+  sud_id="$(basename -- $sub)"
+
+  mv ${ROOT_FUNC}/task-innerspeech_run-01_bold_pp_standard.nii.gz ${ROOT_FUNC}/${sud_id}_ses-001_task-innerspeech_run-01_bold_pp_standard.nii.gz
+  mv ${ROOT_FUNC}/task-innerspeech_run-02_bold_pp_standard.nii.gz ${ROOT_FUNC}/${sud_id}_ses-001_task-innerspeech_run-02_bold_pp_standard.nii.gz
+  mv ${ROOT_FUNC}/task-innerspeech_run-03_bold_pp_standard.nii.gz ${ROOT_FUNC}/${sud_id}_ses-001_task-innerspeech_run-03_bold_pp_standard.nii.gz
+
+
+
+done

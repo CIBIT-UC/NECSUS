@@ -1,0 +1,26 @@
+#!/bin/sh
+ROOT_PATH='/home/brunomiguel/Documents/data/BIDS_vswp/sub*'
+
+for sub in $ROOT_PATH
+do
+  sud_id="$(basename -- $sub)"
+
+  ROOT_SUBJECT=$sub/ses-001;
+  ROOT_FUNC=${ROOT_SUBJECT}/func
+
+  ROOT_FUNC_PP=${ROOT_SUBJECT}/task-nomeacaoinner_run-1.feat
+  fnpath_func_standard=${ROOT_FUNC_PP}/func_data_MNI.nii.gz
+  echo $fnpath_func_standard
+  cp ${fnpath_func_standard} ${ROOT_FUNC}/${sud_id}_ses-001_task-innerspeech_run-01_bold_pp_standard.nii.gz
+
+  ROOT_FUNC_PP=${ROOT_SUBJECT}/task-nomeacaoinner_run-2.feat
+  fnpath_func_standard=${ROOT_FUNC_PP}/func_data_MNI.nii.gz
+  echo $fnpath_func_standard
+  cp ${fnpath_func_standard} ${ROOT_FUNC}/${sud_id}_ses-001_task-innerspeech_run-02_bold_pp_standard.nii.gz
+
+  ROOT_FUNC_PP=${ROOT_SUBJECT}/task-nomeacaoinner_run-3.feat
+  fnpath_func_standard=${ROOT_FUNC_PP}/func_data_MNI.nii.gz
+  echo $fnpath_func_standard
+  cp ${fnpath_func_standard} ${ROOT_FUNC}/${sud_id}_ses-001_task-innerspeech_run-03_bold_pp_standard.nii.gz
+
+done

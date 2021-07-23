@@ -1,0 +1,7 @@
+
+heudiconv -d /media/brunomiguel/LANGLYBACKU/DATA/DATA_Carlos_Phonos/{subject}/{session}/*/DATA/*.dcm \
+-s AnaSapalo \
+-ss 001 \
+-c none \
+-o /home/brunomiguel/Documents/data/BIDS \
+--overwrite

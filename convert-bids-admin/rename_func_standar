@@ -1,0 +1,18 @@
+#!/bin/sh
+ROOT_PATH='/home/brunomiguel/Documents/data/BIDS/sub*'
+
+for sub in $ROOT_PATH
+do
+  ROOT_SUBJECT=$sub/ses-001;
+  ROOT_FUNC=${ROOT_SUBJECT}/task-nomeacaoinner_run-1.feat
+
+  fnpath_func_standard=${ROOT_FUNC}/func_data_MNI.nii.gz
+  cp ${fnpath_func_standard} ${ROOT_SUBJECT}/func/task-nomeacaoinner_run-01_bold_pp_standard.nii.gz
+
+
+  ROOT_FUNC=${ROOT_SUBJECT}/task-nomeacaoovert_run-1.feat
+
+  fnpath_func_standard=${ROOT_FUNC}/func_data_MNI.nii.gz
+  cp ${fnpath_func_standard} ${ROOT_SUBJECT}/func/task-nomeacaoovert_run-01_bold_pp_standard.nii.gz
+
+done
