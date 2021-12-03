@@ -53,12 +53,13 @@ methodStruct=methodInitialization(METHOD);
 
 % -------- PTB init ---------
 syncTrick(); % Run sync trick proposed by PTB dev.
+Screen('Preference', 'SkipSyncTests', 1);
 
 % Get the screen numbers
 ptb.screens=Screen('Screens');
 
 % Draw to the external screen if avaliable
-ptb.screenNumber=0;
+ptb.screenNumber=2;
 
 ptb.backgroundLum=BACKGROUNDLUM;
 
