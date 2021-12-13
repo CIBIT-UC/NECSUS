@@ -14,6 +14,10 @@ fprintf('Value of QUEST mean %f and sd %f.\n',t,sd);
 % tTest=QuestMean(q)		% Recommended by King-Smith et al. (1994)
 % tTest=QuestMode(q);		% Recommended by Watson & Pelli (1983)
 
+if t<0
+    t=0;
+    fprintf('corrected to 0.\n');
+end
 
 fprintf('Next contrast test %f.\n', t );
 

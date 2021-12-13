@@ -1,4 +1,4 @@
-function [ response, time ] = runStim( ptb, lcd, gabor, methodStruct )
+function [ response, time, model] = runStim( ptb, lcd, gabor, methodStruct )
 %RUNSTIM run stim based on preset variables
 
 % load gamma-corrected CLUT (color look-up table) - variable
@@ -235,6 +235,8 @@ try
     Screen('Flip',wScreen); % Flip to the screen.
     
     pause(1);
+    
+    model=methodStruct.q;
     
     % Restore originalCLUT.
     load('debug.mat')

@@ -31,7 +31,7 @@ BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
 pathToGreyData=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
 
 % --- Make a vector to record/store the response for each trial ---
-respMatrix = [];
+respMatrix = []
 
 % keyboard "normalization" of Escape key
 KbName('UnifyKeyNames');
@@ -59,13 +59,13 @@ Screen('Preference', 'SkipSyncTests', 1);
 ptb.screens=Screen('Screens');
 
 % Draw to the external screen if avaliable
-ptb.screenNumber=2;
+ptb.screenNumber=1;
 
 ptb.backgroundLum=BACKGROUNDLUM;
 
 %% RUN stimuli
 
-[responseMatrix,timesLog]=runStim(ptb, lcd, gabor, methodStruct);
+[responseMatrix,timesLog,model]=runStim(ptb, lcd, gabor, methodStruct);
 
 %% Results analysis
 
@@ -77,15 +77,33 @@ results.SPATIALFREQ=SPATIALFREQ;
 results.HASGLARE=HASGLARE; 
 results.BACKGROUNDLUM=BACKGROUNDLUM; 
 
+%%
+% figure, plot(1:numel(model.pdf), model.pdf);
+% 
+% %%
+% 
+% figure, plot(model.i);
+%%
+
+betaEstimate=QuestBetaAnalysis(model)
+
+%%
+intensityT=QuestQuantile(model,.5)
+intensityNT=QuestQuantile(model,.75)
+intensityST=QuestQuantile(model,0.99)
+sd=QuestSd(model)
+
 %% Save data
 
-% save responseMatrix
+% % save responseMatrix
 responseFileName=sprintf('%s_%s_%s_%i_answers',PARTICIPANTNAME,string(SPATIALFREQ),METHOD,HASGLARE);
 responseFilePathName=fullfile(pwd,'Answers',[responseFileName '.mat']);
-save(responseFilePathName,'responseMatrix','timesLog');
-
-% Save Results.
+save(responseFilePathName,'responseMatrix','timesLog', 'model');
+% 
+% % Save Results.
 resultsFileName=sprintf('%s_%s_%s_%i_results',PARTICIPANTNAME,string(SPATIALFREQ),METHOD,HASGLARE);
 resultsFilePathName=fullfile(pwd,'Results',[resultsFileName '.mat']);
 save(resultsFilePathName,'results');
+
+%% 
 
