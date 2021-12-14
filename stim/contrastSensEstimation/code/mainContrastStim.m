@@ -21,7 +21,7 @@ addpath(genpath('Utils'));
 PARTICIPANTNAME='testBruno';%sub-NECSUS-UC001%; 
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
-VIEWINGDISTANCE=40; %150 | 40 (debug)
+VIEWINGDISTANCE=150; %150 | 40 (debug)
 SPATIALFREQ=10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
 HASGLARE=0; % input('glare/noglare?:','s'); % glare setup
 BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
@@ -53,13 +53,13 @@ methodStruct=methodInitialization(METHOD);
 
 % -------- PTB init ---------
 syncTrick(); % Run sync trick proposed by PTB dev.
-Screen('Preference', 'SkipSyncTests', 1);
+% Screen('Preference', 'SkipSyncTests', 1);
 
 % Get the screen numbers
 ptb.screens=Screen('Screens');
 
 % Draw to the external screen if avaliable
-ptb.screenNumber=1;
+ptb.screenNumber=2;
 
 ptb.backgroundLum=BACKGROUNDLUM;
 
@@ -88,10 +88,10 @@ results.BACKGROUNDLUM=BACKGROUNDLUM;
 betaEstimate=QuestBetaAnalysis(model)
 
 %%
-intensityT=QuestQuantile(model,.5)
-intensityNT=QuestQuantile(model,.75)
-intensityST=QuestQuantile(model,0.99)
-sd=QuestSd(model)
+intensityT=QuestQuantile(model,.5);
+intensityNT=QuestQuantile(model,.75);
+
+sd=QuestSd(model);
 
 %% Save data
 
@@ -103,7 +103,7 @@ save(responseFilePathName,'responseMatrix','timesLog', 'model');
 % % Save Results.
 resultsFileName=sprintf('%s_%s_%s_%i_results',PARTICIPANTNAME,string(SPATIALFREQ),METHOD,HASGLARE);
 resultsFilePathName=fullfile(pwd,'Results',[resultsFileName '.mat']);
-save(resultsFilePathName,'results');
+save(resultsFilePathName,'results', 'intensityNT', 'intensityT', 'model');
 
 %% 
 
