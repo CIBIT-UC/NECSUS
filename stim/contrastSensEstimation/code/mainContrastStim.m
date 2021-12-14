@@ -18,7 +18,7 @@ addpath(genpath('Utils'));
 %% PRESETS
 
 % participant's code
-PARTICIPANTNAME='testBruno';%sub-NECSUS-UC001%; 
+PARTICIPANTNAME=%TODO%; % e.g. sub-NECSUS-UC001%; 
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
 VIEWINGDISTANCE=150; %150 | 40 (debug)
@@ -31,7 +31,7 @@ BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
 pathToGreyData=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
 
 % --- Make a vector to record/store the response for each trial ---
-respMatrix = []
+respMatrix = [];
 
 % keyboard "normalization" of Escape key
 KbName('UnifyKeyNames');
@@ -85,7 +85,7 @@ results.BACKGROUNDLUM=BACKGROUNDLUM;
 % figure, plot(model.i);
 %%
 
-betaEstimate=QuestBetaAnalysis(model)
+betaEstimate=QuestBetaAnalysis(model);
 
 %%
 intensityT=QuestQuantile(model,.5);
