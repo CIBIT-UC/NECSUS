@@ -1,6 +1,9 @@
 function [ response, time, model] = runStim( ptb, lcd, gabor, methodStruct )
 %RUNSTIM run stim based on preset variables
 
+% suppress chars on command window during stim.
+ListenChar(2);
+
 % load gamma-corrected CLUT (color look-up table) - variable
 % "invertedCLUT".
 
@@ -250,6 +253,9 @@ try
     ShowCursor;
     Priority(0);
     
+    % suppress chars on command window during stim.
+    ListenChar(0);
+
     
     
 catch me
@@ -264,6 +270,10 @@ catch me
     ShowCursor;
     Priority(0);
     rethrow(me);
+    
+    % suppress chars on command window during stim.
+    ListenChar(0);
+
     
 end
 
