@@ -64,8 +64,9 @@ try
     % Open an on screen window
     [window, windowRect]=Screen('OpenWindow', screenNumber,[Rb,Gb,Bb],[],[],[],[],0);
     
-    load('C:\Users\Bruno\Desktop\LuminanciaLCD-PR650-dez2018\LCDnexus\necsusNOLIGHT-LCD_monitor_RGB_Lum11-Dec-2018.mat');
+    load(fullfile('Utils', 'luminance', 'necsusNOLIGHT-LCD_monitor_RGB_Lum11-Dec-2018.mat'));
     gammaTable = RGB_lum;
+    
     for c = 1:4
         gammaTable(:,c)=gammaTable(:,c)./max(gammaTable(:,c));
     end
