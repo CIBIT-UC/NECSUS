@@ -10,6 +10,6 @@ function [glare] = designGlare( glare, lcd)
     glare.glareDimPix=round(SizeCm/pixSize); 
 
     % Set of witdh of the glare squre.
-    glare.glareWidth=3;
+    %glare.glareWidth=3;
     
 end

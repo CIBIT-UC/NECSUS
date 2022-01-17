@@ -5,10 +5,10 @@ function glare = glareInfo()
 
 glare=struct();
 
-glare.glareDimDegree=25; % Dimension of the glare setup
+glare.glareDimDegree=10; % Dimension of the glare setup
 
 
-glare.glareWidth=3; % Dimension of the glare setup
+glare.glareWidth=40; % Dimension of the glare setup
 
 
 end

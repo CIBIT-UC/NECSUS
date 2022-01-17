@@ -9,8 +9,8 @@ lcd=struct();
 lcd.pathToGreyData=pathToGreyData;
 
 % Debug office.
-lcd.screenHeight=25.9; % Screen height (cm) 
-lcd.screenWidth=54.6; % Screen width (cm).
+lcd.screenHeight=32.5; % Screen height (cm) 
+lcd.screenWidth=52; % Screen width (cm).
 lcd.viewingDistance=VIEWINGDISTANCE; %150; % Viewing Distance (cm).
 
 % % % At home.

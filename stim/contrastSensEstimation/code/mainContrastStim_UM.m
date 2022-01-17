@@ -19,7 +19,7 @@ addpath(genpath('Utils'));
 
 % participant's code
 PARTICIPANTNAME="Glaretest";%TODO%; % e.g. sub-NECSUS-UC001%; 
-VIEWINGDISTANCE=40; %150 | 40 (debug)
+VIEWINGDISTANCE=150;% | 40 (debug)
 
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
@@ -69,7 +69,7 @@ ptb.screens=Screen('Screens');
 % Draw to the external screen if avaliable
 % ::: TODO :::
 % --- To be confirmed in UM setup --- %
-ptb.screenNumber=1;
+ptb.screenNumber=2;
 % ::: TODO :::
 
 ptb.backgroundLum=BACKGROUNDLUM;
