@@ -1,7 +1,7 @@
 
 
 ori=[100, 100];
-scrSize=8;
+scrSize=4;
 
 % open screen for debug
 screens=Screen('Screens');
@@ -68,7 +68,7 @@ Screen('Flip', w, [], 1);
 %%
 
 for i = 1: 10
-     pause(1)
+    
 
     y = randsample(s,size(xymatrix,2),BlinkDots);
 

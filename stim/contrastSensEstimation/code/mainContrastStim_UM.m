@@ -19,7 +19,7 @@ addpath(genpath('Utils'));
 
 % participant's code
 PARTICIPANTNAME="Glaretest";%TODO%; % e.g. sub-NECSUS-UC001%; 
-VIEWINGDISTANCE=150;% | 40 (debug)
+VIEWINGDISTANCE=40;% 150 | 40 (debug)
 
 
 METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
