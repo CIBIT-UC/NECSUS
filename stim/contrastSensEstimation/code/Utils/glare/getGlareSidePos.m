@@ -1,7 +1,7 @@
-function pos = getGlareSidePos( ppd, a, b, c, d, spacingBetwInDeg)
+function pos = getGlareSidePos( glare, a, b, c, d)
 
 if nargin <1
-    ppd=4;
+    %ppd=4;
     
     % point#1 (a,b); point#2 (c,d)
     a = 0;
@@ -9,14 +9,14 @@ if nargin <1
     c=100; 
     d=100;
     
-    spacingBetwInDeg=1;
+    %spacingBetwInDeg=1;
 end
 
 % Legnth of one side - similar to the other 3.
 sideLength = pdist([a,b;a,d],'euclidean');
 
 % Number of points considering side length, screen and visual angles.
-numPoints = sideLength / (spacingBetwInDeg * ppd);
+numPoints = sideLength / glare.glareSpacingPixs;
 
 % Separation between points.
 sepBetweenPointsInPix= linspace(0,sideLength,numPoints);

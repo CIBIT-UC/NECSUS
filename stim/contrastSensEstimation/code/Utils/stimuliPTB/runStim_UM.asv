@@ -106,7 +106,6 @@ try
     % Display fixation cross in the center of the screen and wait for
     % keyboard key press to start countdown (5 to 1 with 0.5
     % sec interval).
-    
     DrawFormattedText(wScreen,...
         'Carregue em qualquer\n tecla para iniciar.',...
         'center',...
@@ -124,13 +123,12 @@ try
         end
 
         % Display number countDown.
-        
         DrawFormattedText(wScreen,...
             stim.countDownVals{countDownIdx},...
             'center',...
             'center',...
             white);
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
+        Screen('Flip',wScreen); % Flip to the screen.
         WaitSecs(1);
     end
     
@@ -169,8 +167,7 @@ try
             [sCenter.xCenter sCenter.yCenter]);
         
         % Flip to the screen.
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
-
+        Screen('Flip', wScreen);
         
         % Wait until fixation cross period ends.
         WaitSecs( (time.fCrossPres(trialIdx)+stim.isiDurationSecs) - (GetSecs-time.start) );
@@ -192,8 +189,7 @@ try
         end
         
         % Flip to the screen.
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
-
+        Screen('Flip', wScreen);
         
         % Wait until stim presentation period ends.
         WaitSecs( (time.stimPres(trialIdx)+stim.stimDurationSecs) - (GetSecs-time.start) );
@@ -211,8 +207,7 @@ try
             [sCenter.xCenter sCenter.yCenter]);
         
         % Flip to the screen.
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
-
+        Screen('Flip', wScreen);
         
         % Now we wait for a keyboard button signaling the observers response.
         % The 'm' key signals a positive response

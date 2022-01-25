@@ -69,7 +69,7 @@ ptb.screens=Screen('Screens');
 % Draw to the external screen if avaliable
 % ::: TODO :::
 % --- To be confirmed in UM setup --- %
-ptb.screenNumber=2;
+ptb.screenNumber=1;
 % ::: TODO :::
 
 ptb.backgroundLum=BACKGROUNDLUM;

@@ -19,7 +19,7 @@ white = WhiteIndex(w);
 % Get white color.
 black = BlackIndex(w);
 
-offTime=.250; % (seconds)
+offTime=.100; % (seconds)
 
 s = RandStream('mlfg6331_64'); 
 BlinkDots = 3;
@@ -33,25 +33,19 @@ glareSquareDeg  = 10;
 % pixels per degree
 mon_width   = 59;   % horizontal dimension of viewable screen (cm)
 v_dist      = 40;   % viewing distance (cm)
-
 ppd         = pi * (rect(3)-rect(1)) / atan(mon_width/v_dist/2) / 360;    
 
-dot_w       = 1;  % width of dot (deg)
-spacingBetwInDeg = 2; % spacing between dots (deg).
+% Dot specs.
+dot_w       = .5;  % width of dot (deg)
+spacingBetwInDeg = 1; % spacing between dots (deg).
 glareSquarePix  = glareSquareDeg * ppd;
 
-
-%% Draw something
-
-Screen('FillRect', w, white, [1 1 290 290]);
-
-Screen('Flip', w);
 
 
 %%
 % [minSmoothPointSize, maxSmoothPointSize, minAliasedPointSize, maxAliasedPointSize] = Screen(%DrawDots , windowPtr, xy [,size] [,color] [,center] [,dot_type][, lenient]);
 
-xymatrix=getGlareSidePos( ppd,...
+xymatrix=getGlareSide( ppd,...
     center(1) - glareSquarePix, ...
     center(2) - glareSquarePix, ...
     center(1) + glareSquarePix, ...
@@ -85,4 +79,61 @@ for i = 1: 10
 end
 %%
 sca
+
+
+
+
+
+
+function pos = getGlareSide( ppd, a, b, c, d, spacingBetwInDeg)
+
+if nargin <1
+    ppd=4;
+    
+    % point#1 (a,b); point#2 (c,d)
+    a = 0;
+    b = 0;
+    c=100; 
+    d=100;
+    
+    spacingBetwInDeg=1;
+end
+
+% Legnth of one side - similar to the other 3.
+sideLength = pdist([a,b;a,d],'euclidean');
+
+% Number of points considering side length, screen and visual angles.
+numPoints = sideLength / (spacingBetwInDeg * ppd);
+
+% Separation between points.
+sepBetweenPointsInPix= linspace(0,sideLength,numPoints);
+
+pos = [];
+
+% Get position from all sides.
+
+% Left
+
+xCoord = ones(size(sepBetweenPointsInPix)) * a;
+yCoord = b+sepBetweenPointsInPix;
+pos=[xCoord; yCoord];
+
+% Top
+xCoord = a+sepBetweenPointsInPix;
+yCoord = ones(size(sepBetweenPointsInPix)) * b;
+pos=[pos,[xCoord; yCoord]];
+
+% Bottom
+xCoord = a+sepBetweenPointsInPix;
+yCoord = ones(size(sepBetweenPointsInPix)) * d;
+pos=[pos,[xCoord; yCoord]];
+
+% Right
+xCoord = ones(size(sepBetweenPointsInPix)) * c;
+yCoord = b+sepBetweenPointsInPix;
+pos=[pos,[xCoord; yCoord]];
+
+end
+
+
 

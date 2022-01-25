@@ -10,6 +10,13 @@ function [glare] = designGlare( glare, lcd)
     glare.glareDimPix=round(SizeCm/pixSize); 
 
     % Set of witdh of the glare squre.
-    %glare.glareWidth=3;
+    dotSizeCm=2*lcd.viewingDistance*tan(pi*glare.glareDotWidth/(2*180)); % Dimension of gabor in cm.
+  
+    glare.glareDotWidthPixs=round(dotSizeCm/pixSize);
+
+    SizeSpacingCm=2*lcd.viewingDistance*tan(pi*glare.spaceBetwDotsDeg/(2*180)); % Dimension of gabor in cm.
+    glare.glareSpacingPixs=round(SizeSpacingCm/pixSize);
+
+    
     
 end
