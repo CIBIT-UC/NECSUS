@@ -1,22 +1,26 @@
-function [glare] = designGlare( glare, lcd)
+function [glare] = designGlare( glare, lcd, sCenter)
 %xxxx Summary of this function goes here
 %   Detailed explanation goes here
 
     % Estimate size considering the visual angle glare.
-    pixSize=lcd.screenWidth/lcd.screenXpixels; % Pixel sizecm/pix.
-    SizeCm=2*lcd.viewingDistance*tan(pi*glare.glareDimDegree/(2*180)); % Dimension of gabor in cm.
+    pixSize             = lcd.screenWidth/lcd.screenXpixels; % Pixel sizecm/pix.
+    SizeCm              = 2*lcd.viewingDistance*tan(pi*glare.glareDimDegree/(2*180)); % Dimension of gabor in cm.
 
     % Dimension of glare square in pixels.
-    glare.glareDimPix=round(SizeCm/pixSize); 
+    glare.glareDimPix   = round(SizeCm/pixSize); 
 
     % Set of witdh of the glare squre.
-    dotSizeCm=2*lcd.viewingDistance*tan(pi*glare.glareDotWidth/(2*180)); % Dimension of gabor in cm.
+    dotSizeCm           = 2*lcd.viewingDistance*tan(pi*glare.glareDotWidth/(2*180)); % Dimension of gabor in cm.
   
-    glare.glareDotWidthPixs=round(dotSizeCm/pixSize);
+    glare.glareDotWidthPixs     =round(dotSizeCm/pixSize);
 
-    SizeSpacingCm=2*lcd.viewingDistance*tan(pi*glare.spaceBetwDotsDeg/(2*180)); % Dimension of gabor in cm.
-    glare.glareSpacingPixs=round(SizeSpacingCm/pixSize);
+    SizeSpacingCm       = 2*lcd.viewingDistance*tan(pi*glare.spaceBetwDotsDeg/(2*180)); % Dimension of gabor in cm.
+    glare.glareSpacingPixs =round(SizeSpacingCm/pixSize);
 
-    
+    glare.xymatrix      = getGlareSidePos( glare,...
+                            sCenter.xCenter - glare.glareDimPix, ...
+                            sCenter.yCenter - glare.glareDimPix, ...
+                            sCenter.xCenter + glare.glareDimPix, ...
+                            sCenter.yCenter + glare.glareDimPix);
     
 end

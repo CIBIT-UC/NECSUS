@@ -8,16 +8,19 @@ glare=struct();
 glare.glareDimDegree    = 12.5; % Dimension of the glare setup (degrees).
 
 % Dot specs.
-glare.glareDotWidth     = .5;  % width of dot (deg).
-glare.spaceBetwDotsDeg  = 1; % spacing between dots (deg).
+glare.glareDotWidth     = .3;  % width of dot (deg).
+glare.spaceBetwDotsDeg  = 2; % spacing between dots (deg).
 
 % glare.glareWidth= XXX ; % Dimension of the glare setup (pixels)
 
 glare.s                 = RandStream('mlfg6331_64'); % Randomize dots blinking.
-glare.numBlinkingDots   = 5;
+glare.numBlinkingDots   = 10;
 
-glare.blinkOffTime      =.3; % (seconds)
-glare.blinkInterval     =.5; % (seconds)
+glare.blinkOffTime      =.1; % (seconds)
+glare.blinkInterval     =.3; % (seconds)
+
+glare.y=[];
+glare.xy=[];
 
 end
 

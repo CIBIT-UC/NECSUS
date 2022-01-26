@@ -18,7 +18,7 @@ stimuli.sigma = stimuli.gaborDimPix/7;
 stimuli.frameDuration = Screen('GetFlipInterval', window);
 
 % Presentation Time for the Gabor in seconds and frames.
-stimuli.stimDurationSecs = 0.5; %500msec
+stimuli.stimDurationSecs = .5; %500msec
 stimuli.stimDurationFrames = round(stimuli.stimDurationSecs/stimuli.frameDuration);
 
 % Interstimulus interval time in seconds and frames
@@ -28,8 +28,8 @@ stimuli.isiDurationFrames = round(stimuli.isiDurationSecs / stimuli.frameDuratio
 %-------------------- KEYBORD INFORMATION ------------------------%
 
 stimuli.escapekey=KbName('Escape');
-stimuli.keyNotView=KbName('1'); % key not see
-stimuli.keyView=KbName('3'); % key to see
+stimuli.keyNotView=KbName('q'); % key not see
+stimuli.keyView=KbName('w'); % key to see
 
 %---------------------- UTILS ---------------------------%
 stimuli.countDownVals={'3','2','1'};

@@ -1,6 +1,7 @@
 function [ response, time, model] = runStim_UM( ptb, lcd, gabor, glare, methodStruct )
 %RUNSTIM run stim based on preset variables
 
+response = [];
 
 % load gamma-corrected CLUT (color look-up table) - variable
 % "invertedCLUT".
@@ -28,15 +29,23 @@ Screen('Preference', 'SkipSyncTests', 1);
     [],...
     0);
 
-   %%%%%%%%% Be careful.%%%%%%%%%%
-    Screen('Preference', 'SkipSyncTests', 1);
+% Measure the vertical refresh rate of the monitor
+ifi         = Screen('GetFlipInterval', wScreen);
+
+% Length of time and number of frames we will use for each drawing test
+numSecs     = 1;
+numFrames   = round(numSecs / ifi);
+
+
+% Numer of frames to wait when specifying good timing.
+waitframes = 1;
 
 
 % --- START DISPLAY ---
 try
     % suppress chars on command window during stim.
     ListenChar(2);
-
+    
     
     % MONITOR SETUP / Linearize monitor gamma.
     % upload inverse gamma function to screen - linearize lum.
@@ -44,16 +53,16 @@ try
         wScreen,...
         repmat(invertedCLUT, [3,1])' );
     
-     % Screen debug.
+    % Screen debug.
     save('debug.mat','originalCLUT')
     
     
     % Define white.
-    white   = WhiteIndex(ptb.screenNumber); % required to display fixation cross
+    white           = WhiteIndex(ptb.screenNumber); % required to display fixation cross
     
- 
+    
     % Define center of the screen.
-    [sCenter.xCenter, sCenter.yCenter]  = RectCenter(windowRect);
+    [sCenter.xCenter, sCenter.yCenter]      = RectCenter(windowRect);
     
     % Get the size of the on screen window.
     [lcd.screenXpixels, lcd.screenYpixels]  = Screen('WindowSize', wScreen);
@@ -62,32 +71,25 @@ try
     Screen('TextSize', wScreen, 50);
     
     % Fixation cross.
-    fCross=designFixationCross();
+    fCross          = designFixationCross();
     
     % Glare.
     if ptb.hasGlare
-        glare=designGlare(glare, lcd);
-        glare.xymatrix    = getGlareSidePos( glare,...
-                            sCenter.xCenter - glare.glareDimPix, ...
-                            sCenter.yCenter - glare.glareDimPix, ...
-                            sCenter.xCenter + glare.glareDimPix, ...
-                            sCenter.yCenter + glare.glareDimPix);
-
-        plotGlare(glare, wScreen, white, backgrColor);
-
+        % Prepare Glare frame.
+        glare       = designGlare(glare, lcd, sCenter);
+        
     end
     
     % Hide cursor.
     HideCursor;
     
     % --- STIMULUS PARAMETER SETUP ---
-    stim=stimulusDefinition(lcd, gabor, wScreen);
-    
-    disableNorm = [];
+    stim            = stimulusDefinition(lcd, gabor, wScreen);
+    disableNorm     = [];
     preContrastMultiplier = [];
     
     % Build a procedural gabor texture - PTB3
-    gabortex = CreateProceduralGabor(wScreen,...
+    gabortex        = CreateProceduralGabor(wScreen,...
         stim.gaborDimPix,...
         stim.gaborDimPix,...
         [],...
@@ -112,17 +114,19 @@ try
         'center',...
         'center',...
         white);
-    Screen('Flip',wScreen); % Flip to the screen.
+    
+    Screen('Flip', wScreen); % Flip to the screen.
+    
     KbStrokeWait;
     
     % Present countdown.
     for countDownIdx = 1:numel(stim.countDownVals)
-
+        
         if ptb.hasGlare
-            plotGlare(glare, wScreen, white, backgrColor);
-
+            screenGlare(glare, wScreen, white, 0);
+            
         end
-
+        
         % Display number countDown.
         
         DrawFormattedText(wScreen,...
@@ -130,100 +134,175 @@ try
             'center',...
             'center',...
             white);
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
+        
+        Screen('Flip', wScreen); % Flip to the screen.
         WaitSecs(1);
     end
     
     % --- Main loop ---
     
-    time.start=GetSecs;
-    trialIdx=0;
+    vbl         = Screen('Flip', wScreen, [], 1);
+    
+    time.start  = GetSecs;
+    
+    t2NextBlink = glare.blinkInterval;
+    
+    t2OffBlink  = glare.blinkInterval+glare.blinkOffTime;
+    
+    trialIdx    = 0;
     
     while ~methodStruct.isComplete
-        trialIdx=trialIdx+1;
+        trialIdx     = trialIdx+1;
         
         % Get next contrast based on the method selected.
-        methodStruct=getNextTrial(methodStruct, trialIdx);
-        
+        methodStruct = getNextTrial(methodStruct, trialIdx);
         fprintf('next trial contrast: %f. \n', methodStruct.contrastTrial)
         
-        % Present fixation cross.
+        
+        % Present fixation cross + frame.
         
         % Chrono.
-        time.fCrossPres(trialIdx)=GetSecs-time.start;
+        time.fCrossPres(trialIdx) = GetSecs-time.start;
         
-% %         % Change the blend function to draw an antialiased fixation
-% %         % point in the centre of the screen.
-% %         Screen('BlendFunction', wScreen, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
+        % %         % Change the blend function to draw an antialiased fixation
+        % %         % point in the centre of the screen.
+        % %         Screen('BlendFunction', wScreen, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
         
-        if ptb.hasGlare
-            plotGlare(glare, wScreen, white, backgrColor);
-        end
-
-        % Draw the fixation cross.
-        Screen('DrawLines',...
-            wScreen,...
-            fCross.CrossCoords,...
-            fCross.lineWidthPix,...
-            white,...
-            [sCenter.xCenter sCenter.yCenter]);
-        
-        % Flip to the screen.
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
-
         
         % Wait until fixation cross period ends.
-        WaitSecs( (time.fCrossPres(trialIdx)+stim.isiDurationSecs) - (GetSecs-time.start) );
+        DurationInSecs = ( (time.fCrossPres(trialIdx)+stim.isiDurationSecs) - (GetSecs-time.start) );
+        DurationInSecs
+        for frame = 1: round(numFrames * DurationInSecs)
+            
+            if ptb.hasGlare
+                
+                screenGlare(glare, wScreen, white, 0);
+                
+                if t2NextBlink<(GetSecs-time.start)
+                    fprintf('blink. %.2f seconds \n', GetSecs-time.start);
+                    
+                    
+                    glare       = setBlink(glare); % Select subset of off dots
+                    screenGlare(glare, wScreen, backgrColor, 1); % Prepare stim for flip.
+                    
+                    t2OffBlink  = t2NextBlink + glare.blinkOffTime; % time to turn off blink.
+                    t2NextBlink = t2NextBlink + glare.blinkOffTime + glare.blinkInterval; % time offset to next blink
+                    
+                    fprintf('next blink. %.2f seconds \n', t2NextBlink);
+                end
+                
+                if t2OffBlink <(GetSecs-time.start)
+                    screenGlare(glare, wScreen, backgrColor, 1);
+                end
+                
+            end
+            
+            % Draw the fixation cross.
+            Screen('DrawLines',...
+                wScreen,...
+                fCross.CrossCoords,...
+                fCross.lineWidthPix,...
+                white,...
+                [sCenter.xCenter sCenter.yCenter]);
+            
+            % Flip to the screen.
+            vbl = Screen('Flip', wScreen, vbl + (waitframes - 0.5) * ifi); % Flip to the screen.
+            
+        end
         
         
-        % Present Gabor.
+        % --- Present Gabor ---
         % Chrono.
         time.stimPres(trialIdx)=GetSecs-time.start;
         
-        % Set the right blend function for drawing the gabors.
-        Screen('BlendFunction', wScreen, 'GL_ONE', 'GL_ZERO');
         
-        % Draw the Gabor.
-        Screen('DrawTextures', wScreen, gabortex, [], [], gabor.angle, [], [], ...
-            [], [], kPsychDontDoRotation, [gabor.phase+180, stim.spatFreq, stim.sigma, methodStruct.contrastTrial, gabor.aspectratio, 0, 0, 0]');
+        % Wait until fixation cross period ends.
+        DurationInSecs = ( ( (time.stimPres(trialIdx)+stim.stimDurationSecs) - (GetSecs-time.start) ) );
         
-        if ptb.hasGlare
-            plotGlare(glare, wScreen, white, backgrColor);
+        for frame = 1: round(numFrames * DurationInSecs)
+            % Set the right blend function for drawing the gabors.
+            Screen('BlendFunction', wScreen, 'GL_ONE', 'GL_ZERO');
+            
+            if ptb.hasGlare
+                
+                screenGlare(glare, wScreen, white, 0);
+                
+                if t2NextBlink<(GetSecs-time.start)
+                    fprintf('blink. %.2f seconds \n', GetSecs-time.start);
+                    glare       = setBlink(glare); % Select subset of off dots
+                    screenGlare(glare, wScreen, backgrColor, 1); % Prepare stim for flip.
+                    
+                    t2OffBlink  = t2NextBlink + glare.blinkOffTime; % time to turn off blink.
+                    t2NextBlink = t2NextBlink + glare.blinkOffTime + glare.blinkInterval; % time offset to next blink
+                    fprintf('next blink. %.2f seconds \n', t2NextBlink);
+                end
+                
+                if t2OffBlink <(GetSecs-time.start)
+                    screenGlare(glare, wScreen, backgrColor, 1);
+                end
+                
+            end
+            
+            
+            % Draw the Gabor.
+            Screen('DrawTextures', wScreen, gabortex, [], [], gabor.angle, [], [], ...
+                [], [], kPsychDontDoRotation, [gabor.phase+180, stim.spatFreq, stim.sigma, methodStruct.contrastTrial, gabor.aspectratio, 0, 0, 0]');
+            
+             % Flip to the screen.
+            vbl = Screen('Flip', wScreen, vbl + waitframes * ifi); % Flip to the screen.
+            
         end
         
-        % Flip to the screen.
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
-
         
-        % Wait until stim presentation period ends.
-        WaitSecs( (time.stimPres(trialIdx)+stim.stimDurationSecs) - (GetSecs-time.start) );
-        
-        if ptb.hasGlare
-            plotGlare(glare, wScreen, white, backgrColor);
-        end
-
-        % Draw the fixation cross.
-        Screen('DrawLines',...
-            wScreen,...
-            fCross.CrossCoords,...
-            fCross.lineWidthPix,...
-            white,...
-            [sCenter.xCenter sCenter.yCenter]);
-        
-        % Flip to the screen.
-        Screen('Flip', wScreen, [], 1); % Flip to the screen.
-
-        
-        % Now we wait for a keyboard button signaling the observers response.
-        % The 'm' key signals a positive response
-        %   (the participaant saw the stimuli)
-        % and the 'z' key a negative response
-        %   (the participant was not able to see the stimuli).
-        % You can also press escape if you want to exit the program.
-        
+        % --- wait for response --- %
+            
         hasResponse=false;
         
         while ~hasResponse
+            
+            if ptb.hasGlare
+                
+                screenGlare(glare, wScreen, white, 0);
+                
+                if t2NextBlink<(GetSecs-time.start)
+                    fprintf('blink. %.2f seconds \n', GetSecs-time.start);
+                    
+                    glare       = setBlink(glare); % Select subset of off dots
+                    screenGlare(glare, wScreen, backgrColor, 1); % Prepare stim for flip.
+                    
+                    t2OffBlink  = t2NextBlink + glare.blinkOffTime; % time to turn off blink.
+                    t2NextBlink = t2NextBlink + glare.blinkOffTime + glare.blinkInterval; % time offset to next blink
+                    
+                    fprintf('next blink. %.2f seconds \n', t2NextBlink);
+                end
+                
+                if t2OffBlink <(GetSecs-time.start)
+                    screenGlare(glare, wScreen, backgrColor, 1);
+                end
+                
+            end
+            
+            % Draw the fixation cross.
+            Screen('DrawLines',...
+                wScreen,...
+                fCross.CrossCoords,...
+                fCross.lineWidthPix,...
+                white,...
+                [sCenter.xCenter sCenter.yCenter]);
+            
+            
+            % Flip to the screen.
+            vbl = Screen('Flip', wScreen, vbl + waitframes * ifi); % Flip to the screen.        
+            
+            
+            % Now we wait for a keyboard button signaling the observers response.
+            % The 'm' key signals a positive response
+            %   (the participaant saw the stimuli)
+            % and the 'z' key a negative response
+            %   (the participant was not able to see the stimuli).
+            % You can also press escape if you want to exit the program.
+            
+            
             % Check key pressed.
             [~,chronoKey,keyCode] = KbCheck;
             % Time stamp of the answer.
@@ -287,7 +366,7 @@ try
     % Restore originalCLUT.
     load('debug.mat')
     Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
-
+    
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;
@@ -295,25 +374,25 @@ try
     
     % suppress chars on command window during stim.
     ListenChar(0);
-
+    
     
     
 catch me
     warning(me.message);
-     % suppress chars on command window during stim.
+    % suppress chars on command window during stim.
     ListenChar(0);
     % Restore originalCLUT.
     load('debug.mat')
     Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
-
+    
     % Close PTB Screen.
     Screen('CloseAll');
     ShowCursor;
     Priority(0);
     rethrow(me);
     
-   
-
+    
+    
     
 end
 
