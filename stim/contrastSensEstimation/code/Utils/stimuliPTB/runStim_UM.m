@@ -1,20 +1,37 @@
 function [ response, time, model] = runStim_UM( ptb, lcd, gabor, glare, methodStruct )
-%RUNSTIM run stim based on preset variables
+%RUNSTIM_UM  stim based on preset variables
+%   [ response, time, model] = runStim_UM( ptb, lcd, gabor, glare, methodStruct )
+%
+%   Example
+%   runStim_UM
+%
+%   See also
 
-response = [];
+% Author: Bruno Direito
+% Created: 2022-01-27
+% Copyright 2022 University of Coimbra.
 
-% load gamma-corrected CLUT (color look-up table) - variable
-% "invertedCLUT".
 
-load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
+% --------------------------------------------------------
+% --- Initialize steps (variables, set defaults, etc.) ---
+% --------------------------------------------------------
 
-% Transform luminance required to rgb input.
-rgbInput    = luminanceToRgb(ptb.backgroundLum, 8,lcd.pathToGreyData);% bits resolution - 8;
+response            = [];
 
-backgrColor = [round(rgbInput*255),round(rgbInput*255),round(rgbInput*255)];
+% Keyboard "normalization" of Escape key.
+KbName('UnifyKeyNames');
+
+% normalized luminance required to rgb input - 20 cd/m2.
+rgbInput            = luminanceToRgb(ptb.backgroundLum, lcd.pathToGreyData);
+
+% Estimate the background color - 20 cd/m2 (normalized).
+backgrColor         = repmat(round(rgbInput*255), 1, 3);
+
+% -----------------
 % --- PTB setup ---
+% -----------------
+
 Priority(2); % Set "real time priority level".
-%[window,~]=Screen('OpenWindow', ptb.screenNumber); % Open PTB full-screen window.
 
 %%%%%%%%% Be careful.%%%%%%%%%%
 Screen('Preference', 'SkipSyncTests', 1);
@@ -22,45 +39,48 @@ Screen('Preference', 'SkipSyncTests', 1);
 % Open a screen window.
 [wScreen, windowRect]   = Screen('OpenWindow',...
     ptb.screenNumber,...
-    [round(rgbInput*255),round(rgbInput*255),round(rgbInput*255)],... % Background RGB values.
+    backgrColor,...
     [],...
     [],...
     [],...
     [],...
     0);
 
-% Measure the vertical refresh rate of the monitor
-ifi         = Screen('GetFlipInterval', wScreen);
+% Measure the vertical refresh rate of the monitor.
+ifi                     = Screen('GetFlipInterval', wScreen);
 
-% Length of time and number of frames we will use for each drawing test
-numSecs     = 1;
-numFrames   = round(numSecs / ifi);
+% Length of time and number of frames we will use for each drawing test.
+numSecs                 = 1;
+numFrames               = round(numSecs/ifi);
 
-
-% Numer of frames to wait when specifying good timing.
+% Numer of frames to wait.
 waitframes = 1;
 
-
+% ---------------------
 % --- START DISPLAY ---
+% ---------------------
+
 try
-    % suppress chars on command window during stim.
+    % Suppress chars on command window during stim.
     ListenChar(2);
     
-    
-    % MONITOR SETUP / Linearize monitor gamma.
+    % MONITOR SETUP / Linearize monitor gamma table.
     % upload inverse gamma function to screen - linearize lum.
-    originalCLUT    = Screen('LoadNormalizedGammaTable',...
+
+    % Load gamma-corrected CLUT (color look-up table) - variable "invertedCLUT".
+    load(fullfile(pwd,'Utils','luminance','invertedCLUT.mat'));
+
+    displayCLUT    = Screen('LoadNormalizedGammaTable',...
         wScreen,...
         repmat(invertedCLUT, [3,1])' );
     
-    % Screen debug.
-    save('debug.mat','originalCLUT')
+    % Screen debug - in the case that an error occurs with corrected gamma table.
+    save('displayCLUT.mat', 'displayCLUT')
     
-    
+    % Monitor default values.
     % Define white.
     white           = WhiteIndex(ptb.screenNumber); % required to display fixation cross
-    
-    
+        
     % Define center of the screen.
     [sCenter.xCenter, sCenter.yCenter]      = RectCenter(windowRect);
     
@@ -365,7 +385,7 @@ try
     
     % Restore originalCLUT.
     load('debug.mat')
-    Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
+    Screen('LoadNormalizedGammatable', wScreen, displayCLUT);
     
     % Close PTB Screen.
     Screen('CloseAll');
@@ -383,7 +403,7 @@ catch me
     ListenChar(0);
     % Restore originalCLUT.
     load('debug.mat')
-    Screen('LoadNormalizedGammatable', wScreen, originalCLUT);
+    Screen('LoadNormalizedGammatable', wScreen, displayCLUT);
     
     % Close PTB Screen.
     Screen('CloseAll');
