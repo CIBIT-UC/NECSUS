@@ -1,16 +1,5 @@
 function pos = getGlareSidePos( glare, a, b, c, d)
 
-if nargin <1
-    %ppd=4;
-    
-    % point#1 (a,b); point#2 (c,d)
-    a = 0;
-    b = 0;
-    c=100; 
-    d=100;
-    
-    %spacingBetwInDeg=1;
-end
 
 % Legnth of one side - similar to the other 3.
 sideLength = pdist([a,b;a,d],'euclidean');

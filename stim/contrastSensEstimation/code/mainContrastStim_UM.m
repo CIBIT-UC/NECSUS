@@ -1,101 +1,97 @@
-%% INIT
+%mainContrastStim_UM  script to init NECSUS stimulus - contrast detection.
+%   mainContrastStim_UM
+%
+%   Example
+%   mainContrastStim_UM
+%
+%   See also
 
+% Author: Bruno Direito (bruno.direito@uc.pt)
+% Coimbra Institute for Biomedical Imaging and Translational Research, University of Coimbra.
+% Created: 2022-01-27; Last Revision: 2022-01-27
+
+%% INIT
 % close any open connection or PTB screen
 IOPort('Close All');
 Screen('Close All');
 sca;
 
+% clear all variables and commanda window.
 clear all;
 close all;
 clc;
 
+%% Set path
 % --- addpath to required folders ---
 addpath('Results');
 addpath('Answers');
 
 addpath(genpath('Utils'));
 
-%% PRESETS
+%% PRESETS (INFORMATION per RUN)
+HASGLARE        = 1; % input('glare/noglare?:','s'); % glare setup
 
-% participant's code
-PARTICIPANTNAME="Glaretest";%TODO%; % e.g. sub-NECSUS-UC001%; 
-VIEWINGDISTANCE=40;% 150 | 40 (debug)
+VIEWINGDISTANCE = 150;%  | 40 (debug)
 
+%% PRESETS (PARTICIPANT AND STUDY)
 
-METHOD='QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'??
-SPATIALFREQ=10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
-HASGLARE=1; % input('glare/noglare?:','s'); % glare setup
-BACKGROUNDLUM=20; % Luminance background required 20 cd/m2
+% participant's information.
+PARTICIPANTNAME = "Glaretest"; % e.g. sub-NECSUS-UC001%; 
 
-% MR scanner or LCD
+% NECSUS Variables.
+METHOD          = 'QUEST'; %'QUEST' | 'ConstantStimuli' | 'QUESTFSS'
+SPATIALFREQ     = 10; % input('SF (3.5/10)?:','s'); % desired spatial frequency
+BACKGROUNDLUM   = 20; % Luminance background required 20 cd/m2
 
-% ::: TODO :::
+%% DISPLAY PARAMETERS
+
+% ::: SITE specific :::
 % --- Change for UM RGB luminance scale --- %
-pathToGreyData=fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
-% ::: TODO :::
-
-
-% --- Make a vector to record/store the response for each trial ---
-respMatrix = [];
-
-% keyboard "normalization" of Escape key
-KbName('UnifyKeyNames');
+pathToGreyData  = fullfile(pwd,'Utils','luminance','NecsusNolightGray-rgblum11-Dec-2018.mat');
+% ::: SITE specific :::
 
 % --- LCD monitor ---
-lcd=lcdInfo(VIEWINGDISTANCE, pathToGreyData);
+lcd             = lcdInfo(VIEWINGDISTANCE, pathToGreyData);
 
+
+%% STIMULUS PARAMETERS
 % --- GABOR INFORMATION ---
-gabor=gaborInfo(SPATIALFREQ);
-
+gabor               = gaborInfo(SPATIALFREQ);
 % --- Glare INFORMATION ---
-glare=glareInfo();
-
-
-%% INITIALIZE
-
+glare               = glareInfo();
 % --- init method struct ---
-methodStruct=methodInitialization(METHOD);
-
-
-%% STIMULI presentation
+methodStruct        = methodInitialization(METHOD);
 
 % -------- PTB init ---------
 syncTrick(); % Run sync trick proposed by PTB dev.
 % Screen('Preference', 'SkipSyncTests', 1);
 
 % Get the screen numbers
-ptb.screens=Screen('Screens');
+ptb.screens         = Screen('Screens');
 
 % Draw to the external screen if avaliable
-% ::: TODO :::
+% ::: SITE specific :::
 % --- To be confirmed in UM setup --- %
-ptb.screenNumber=1;
-% ::: TODO :::
+ptb.screenNumber    = 1;
+% ::: SITE specific :::
 
-ptb.backgroundLum=BACKGROUNDLUM;
-
-ptb.hasGlare=HASGLARE;
+ptb.backgroundLum   = BACKGROUNDLUM;
+ptb.hasGlare        = HASGLARE;
 
 %% RUN stimuli
-
-[responseMatrix,timesLog,model]=runStim_UM(ptb, lcd, gabor, glare, methodStruct);
+[responseMatrix, timesLog, model] =...
+    runStim_UM(ptb, lcd, gabor, glare, methodStruct);
 
 %% Results analysis
 
 % --- Threshold estimation ---
-[results]=computeThreshold(responseMatrix);
+[results]               = computeThreshold(responseMatrix);
 % data regarding method.
-results.method=METHOD;
-results.SPATIALFREQ=SPATIALFREQ; 
-results.HASGLARE=HASGLARE; 
-results.BACKGROUNDLUM=BACKGROUNDLUM; 
+results.method          = METHOD;
+results.SPATIALFREQ     = SPATIALFREQ; 
+results.HASGLARE        = HASGLARE; 
+results.BACKGROUNDLUM   = BACKGROUNDLUM; 
 
-%%
-% figure, plot(1:numel(model.pdf), model.pdf);
-% 
-% %%
-% 
-% figure, plot(model.i);
 %%
 % % % 
 % % % betaEstimate=QuestBetaAnalysis(model);
