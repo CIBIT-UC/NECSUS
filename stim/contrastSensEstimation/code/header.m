@@ -1,12 +1,12 @@
-function output = designGlare(input)
-%DESIGNGLARE  One-line description here, please.
-%   output = designGlare(input)
+function output = getGlareSidePos(input)
+%GETGLARESIDEPOS  One-line description here, please.
+%   output = getGlareSidePos(input)
 %
 %   Example
-%   designGlare
+%   getGlareSidePos
 %
 %   See also
 
 % Author: Bruno Direito (bruno.direito@uc.pt)
 % Coimbra Institute for Biomedical Imaging and Translational Research, University of Coimbra.
-% Created: 2022-01-27; Last Revision: 2022-01-27
+% Created: 2022-01-28; Last Revision: 2022-01-28

@@ -31,7 +31,7 @@ addpath(genpath('Utils'));
 %% PRESETS (INFORMATION per RUN)
 HASGLARE        = 1; % input('glare/noglare?:','s'); % glare setup
 
-VIEWINGDISTANCE = 150;%  | 40 (debug)
+VIEWINGDISTANCE = 40;% 150 | 40 (debug)
 
 %% PRESETS (PARTICIPANT AND STUDY)
 

@@ -54,7 +54,7 @@ numSecs                 = 1;
 numFrames               = round(numSecs/ifi);
 
 % Numer of frames to wait.
-waitframes = 1;
+waitframes              = 1;
 
 % ---------------------
 % --- START DISPLAY ---
@@ -75,7 +75,7 @@ try
         repmat(invertedCLUT, [3,1])' );
     
     % Screen debug - in the case that an error occurs with corrected gamma table.
-    save('displayCLUT.mat', 'displayCLUT')
+    save(fullfile(pwd,'Utils','luminance','displayCLUT.mat'), 'displayCLUT')
     
     % Monitor default values.
     % Define white.
@@ -104,7 +104,7 @@ try
     HideCursor;
     
     % --- STIMULUS PARAMETER SETUP ---
-    stim            = stimulusDefinition(lcd, gabor, wScreen);
+    stim            = stimulusDefinition_UM(lcd, gabor, wScreen);
     disableNorm     = [];
     preContrastMultiplier = [];
     
@@ -126,11 +126,10 @@ try
     % --- Stimuli presentation ----
     
     % Display fixation cross in the center of the screen and wait for
-    % keyboard key press to start countdown (5 to 1 with 0.5
-    % sec interval).
+    % keyboard key press to start countdown (stim.countDownVals).
     
     DrawFormattedText(wScreen,...
-        'Carregue em qualquer\n tecla para iniciar.',...
+        stim.introMessage,...
         'center',...
         'center',...
         white);
@@ -142,9 +141,9 @@ try
     % Present countdown.
     for countDownIdx = 1:numel(stim.countDownVals)
         
+        % Add glare frame if HASGLARE flag is true.
         if ptb.hasGlare
             screenGlare(glare, wScreen, white, 0);
-            
         end
         
         % Display number countDown.
@@ -178,11 +177,10 @@ try
         methodStruct = getNextTrial(methodStruct, trialIdx);
         fprintf('next trial contrast: %f. \n', methodStruct.contrastTrial)
         
-        
         % Present fixation cross + frame.
         
         % Chrono.
-        time.fCrossPres(trialIdx) = GetSecs-time.start;
+        time.fCrossPres(trialIdx)   = GetSecs-time.start;
         
         % %         % Change the blend function to draw an antialiased fixation
         % %         % point in the centre of the screen.
@@ -190,8 +188,8 @@ try
         
         
         % Wait until fixation cross period ends.
-        DurationInSecs = ( (time.fCrossPres(trialIdx)+stim.isiDurationSecs) - (GetSecs-time.start) );
-        DurationInSecs
+        DurationInSecs              = ( (time.fCrossPres(trialIdx)+stim.isiDurationSecs) - (GetSecs-time.start) );
+ 
         for frame = 1: round(numFrames * DurationInSecs)
             
             if ptb.hasGlare
@@ -202,16 +200,16 @@ try
                     fprintf('blink. %.2f seconds \n', GetSecs-time.start);
                     
                     
-                    glare       = setBlink(glare); % Select subset of off dots
+                    glare           = setBlink(glare); % Select subset of off dots
                     screenGlare(glare, wScreen, backgrColor, 1); % Prepare stim for flip.
                     
-                    t2OffBlink  = t2NextBlink + glare.blinkOffTime; % time to turn off blink.
-                    t2NextBlink = t2NextBlink + glare.blinkOffTime + glare.blinkInterval; % time offset to next blink
+                    t2OffBlink      = t2NextBlink + glare.blinkOffTime; % time to turn off blink.
+                    t2NextBlink     = t2NextBlink + glare.blinkOffTime + glare.blinkInterval; % time offset to next blink
                     
                     fprintf('next blink. %.2f seconds \n', t2NextBlink);
                 end
                 
-                if t2OffBlink <(GetSecs-time.start)
+                if t2OffBlink < (GetSecs-time.start)
                     screenGlare(glare, wScreen, backgrColor, 1);
                 end
                 
@@ -233,13 +231,14 @@ try
         
         % --- Present Gabor ---
         % Chrono.
-        time.stimPres(trialIdx)=GetSecs-time.start;
+        time.stimPres(trialIdx)     = GetSecs-time.start;
         
         
         % Wait until fixation cross period ends.
-        DurationInSecs = ( ( (time.stimPres(trialIdx)+stim.stimDurationSecs) - (GetSecs-time.start) ) );
+        DurationInSecs              = ( ( (time.stimPres(trialIdx)+stim.stimDurationSecs) - (GetSecs-time.start) ) );
         
         for frame = 1: round(numFrames * DurationInSecs)
+            
             % Set the right blend function for drawing the gabors.
             Screen('BlendFunction', wScreen, 'GL_ONE', 'GL_ZERO');
             
@@ -249,11 +248,11 @@ try
                 
                 if t2NextBlink<(GetSecs-time.start)
                     fprintf('blink. %.2f seconds \n', GetSecs-time.start);
-                    glare       = setBlink(glare); % Select subset of off dots
+                    glare           = setBlink(glare); % Select subset of off dots
                     screenGlare(glare, wScreen, backgrColor, 1); % Prepare stim for flip.
                     
-                    t2OffBlink  = t2NextBlink + glare.blinkOffTime; % time to turn off blink.
-                    t2NextBlink = t2NextBlink + glare.blinkOffTime + glare.blinkInterval; % time offset to next blink
+                    t2OffBlink      = t2NextBlink + glare.blinkOffTime; % time to turn off blink.
+                    t2NextBlink     = t2NextBlink + glare.blinkOffTime + glare.blinkInterval; % time offset to next blink
                     fprintf('next blink. %.2f seconds \n', t2NextBlink);
                 end
                 
@@ -269,7 +268,7 @@ try
                 [], [], kPsychDontDoRotation, [gabor.phase+180, stim.spatFreq, stim.sigma, methodStruct.contrastTrial, gabor.aspectratio, 0, 0, 0]');
             
              % Flip to the screen.
-            vbl = Screen('Flip', wScreen, vbl + waitframes * ifi); % Flip to the screen.
+            vbl = Screen('Flip', wScreen, vbl + (waitframes - 0.5) * ifi); % Flip to the screen.
             
         end
         
@@ -312,7 +311,7 @@ try
             
             
             % Flip to the screen.
-            vbl = Screen('Flip', wScreen, vbl + waitframes * ifi); % Flip to the screen.        
+            vbl = Screen('Flip', wScreen, vbl + (waitframes - 0.5) * ifi); % Flip to the screen.        
             
             
             % Now we wait for a keyboard button signaling the observers response.
@@ -384,7 +383,7 @@ try
     model=methodStruct.q;
     
     % Restore originalCLUT.
-    load('debug.mat')
+    load(fullfile(pwd,'Utils','luminance','displayCLUT.mat'))
     Screen('LoadNormalizedGammatable', wScreen, displayCLUT);
     
     % Close PTB Screen.
@@ -394,15 +393,13 @@ try
     
     % suppress chars on command window during stim.
     ListenChar(0);
-    
-    
-    
+     
 catch me
     warning(me.message);
     % suppress chars on command window during stim.
     ListenChar(0);
     % Restore originalCLUT.
-    load('debug.mat')
+    load(fullfile(pwd,'Utils','luminance','displayCLUT.mat'));
     Screen('LoadNormalizedGammatable', wScreen, displayCLUT);
     
     % Close PTB Screen.
@@ -410,8 +407,6 @@ catch me
     ShowCursor;
     Priority(0);
     rethrow(me);
-    
-    
     
     
 end

@@ -1,6 +1,16 @@
 function [ stimuli ] = stimulusDefinition( lcd, gabor, window)
-%STIMULUSDEFINITION Summary of this function goes here
-%   Detailed explanation goes here
+%STIMULUSDEFINITION  One-line description here, please.
+%   output = stimulusDefinition(input)
+%
+%   Example
+%   stimulusDefinition
+%
+%   See also
+
+% Author: Bruno Direito (bruno.direito@uc.pt)
+% Coimbra Institute for Biomedical Imaging and Translational Research, University of Coimbra.
+% Created: 2022-01-27; Last Revision: 2022-01-27
+
 
 
 %-------------------------GABOR INFORMATION---------------------------%

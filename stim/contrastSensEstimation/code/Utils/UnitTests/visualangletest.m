@@ -1,7 +1,7 @@
 screenXpixels = 1920; 
 screenWidth = 50;
 viewingDistance = 150;
-glareDimDegree = 25;
+glareDimDegree = 13;
 
 
 % Estimate size considering the visual angle glare.

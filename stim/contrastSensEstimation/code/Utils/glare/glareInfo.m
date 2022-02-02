@@ -13,7 +13,7 @@ function glare = glareInfo()
 
 glare=struct();
 
-glare.glareDimDegree    = 12.5; % Dimension of the glare setup (degrees).
+glare.glareDimDegree    = 13; % Dimension of the glare setup (degrees).
 
 % Dot specs.
 glare.glareDotWidth     = .3;  % width of dot (deg).
