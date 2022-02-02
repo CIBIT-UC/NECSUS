@@ -38,8 +38,8 @@ stimuli.isiDurationFrames = round(stimuli.isiDurationSecs / stimuli.frameDuratio
 %-------------------- KEYBORD INFORMATION ------------------------%
 
 stimuli.escapekey=KbName('Escape');
-stimuli.keyNotView=KbName('q'); % key not see
-stimuli.keyView=KbName('w'); % key to see
+stimuli.keyNotView=KbName('1'); % key not see
+stimuli.keyView=KbName('3'); % key to see
 
 %---------------------- UTILS ---------------------------%
 stimuli.countDownVals={'3','2','1'};
