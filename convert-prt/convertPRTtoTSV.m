@@ -13,15 +13,16 @@ end
 outputPath = 'events';
 
 %% Start
-[ cond_names , intervalsPRT ,~,~,~, blockDur, blockNum ] = readProtocol( fullfile(prtPath,[prtFile(1:end-4) '.prt']) , TR );
+[ cond_names , intervalsPRT ,~,~,~, blockDur, blockNum, msecOnset ] = readProtocol( fullfile(prtPath,[prtFile(1:end-4) '.prt']) , TR );
 
 Condition = {};
 Onset = [];
 Duration = [];
 for cc = 1:length(cond_names)
     Condition = [Condition ; repmat({cond_names(cc)},blockNum(cc),1)];
-    Onset = [Onset ; intervalsPRT.(cond_names{cc})(:,1).*TR-TR];
-    Duration = [Duration ; repmat(blockDur(cc).*TR,blockNum(cc),1)];
+    Onset = [Onset ; msecOnset.(cond_names{cc})(:,1).*TR-TR];
+    Duration = [Duration; blockDur.(cond_names{cc})'*TR];
+     
 end
 [Onset,idx] = sort(Onset);
 Condition = Condition(idx);

@@ -1,21 +1,12 @@
 #!/bin/sh
 
-ROOT_OUPUT='/home/brunomiguel/Documents/data/BIDS_necsus'
-ROOT_CODE='/home/brunomiguel/Documents/GitHub/NECSUS/convert-bids-admin/LOCAL/'
+ROOT_OUPUT='/media/bruno/DATA/BIDS_necsus'
+ROOT_CODE='/home/bruno/Documents/GitHub/NECSUS/convert-bids-admin/LOCAL'
 
-heudiconv -d /media/brunomiguel/TOSHIBA\ EXT/NECSUS/{subject}/*.dcm \
+
+heudiconv -d /media/bruno/DATA/NECSUS_RAWDATA/{subject}/*.IMA \
 --anon-cmd $ROOT_CODE//rename_script_necsus.py \
--s SUBNECSUSUC001 \
---ses 01 \
--f $ROOT_CODE/heuristic_necsus.py \
--c dcm2niix -b \
--o $ROOT_OUPUT \
---overwrite
-
-
-heudiconv -d /media/brunomiguel/TOSHIBA\ EXT/NECSUS/{subject}/*.dcm \
---anon-cmd $ROOT_CODE//rename_script_necsus.py \
--s SUBNECSUSUC002_1 \
+-s SUBNECSUSUC034 \
 --ses 01 \
 -f $ROOT_CODE/heuristic_necsus.py \
 -c dcm2niix -b \

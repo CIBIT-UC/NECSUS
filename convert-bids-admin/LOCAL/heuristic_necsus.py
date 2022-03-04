@@ -57,19 +57,19 @@ def infotodict(seqinfo):
         """
         if ('t1_mprage_sag_p2_iso' == s.series_description) and ~s.is_motion_corrected:
             info[t1w].append(s.series_id)
-        if ('retinotopia_8bar_Run1' == s.series_description) and ~s.is_motion_corrected:
+        if ('retinotopia_8bar_Run1' == s.series_description) and ~s.is_motion_corrected and (s.series_files == 180):
             info[retinotopy].append(s.series_id)
-        if ('retinotopia_8bar_Run2' == s.series_description) and ~s.is_motion_corrected:
+        if ('retinotopia_8bar_Run2' == s.series_description) and ~s.is_motion_corrected and (s.series_files == 180):
             info[retinotopy].append(s.series_id)
-        if ('retinotopia_8bar_Run3' == s.series_description) and ~s.is_motion_corrected:
+        if ('retinotopia_8bar_Run3' == s.series_description) and ~s.is_motion_corrected and (s.series_files == 180):
             info[retinotopy].append(s.series_id)
-        if ('Glare_Run1' == s.series_description) and ~s.is_motion_corrected:
+        if ('Glare_Run1' == s.series_description) and ~s.is_motion_corrected and (s.series_files == 177):
             info[glare].append(s.series_id)
-        if ('Glare_Run2' == s.series_description) and ~s.is_motion_corrected:
+        if ('Glare_Run2' == s.series_description) and ~s.is_motion_corrected and (s.series_files == 177):
             info[glare].append(s.series_id)
-        if ('NoGlare_Run1' == s.series_description) and ~s.is_motion_corrected:
+        if ('NoGlare_Run1' == s.series_description) and ~s.is_motion_corrected and (s.series_files == 177):
             info[noglare].append(s.series_id)
-        if ('NoGlare_Run2' == s.series_description) and ~s.is_motion_corrected:
+        if ('NoGlare_Run2' == s.series_description) and ~s.is_motion_corrected and (s.series_files == 177):
             info[noglare].append(s.series_id)
 
     return info
