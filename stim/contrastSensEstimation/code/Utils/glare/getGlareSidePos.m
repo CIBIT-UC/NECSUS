@@ -1,22 +1,21 @@
-function pos = getGlareSidePos( ppd, a, b, c, d, spacingBetwInDeg)
+function pos = getGlareSidePos( glare, a, b, c, d)
+%GETGLARESIDEPOS  returns the positions of the dots simulating the glare frame.
+%   output = getGlareSidePos(input)
+%
+%   Example
+%   getGlareSidePos
+%
+%   See also
 
-if nargin <1
-    ppd=4;
-    
-    % point#1 (a,b); point#2 (c,d)
-    a = 0;
-    b = 0;
-    c=100; 
-    d=100;
-    
-    spacingBetwInDeg=1;
-end
+% Author: Bruno Direito (bruno.direito@uc.pt)
+% Coimbra Institute for Biomedical Imaging and Translational Research, University of Coimbra.
+% Created: 2022-01-28; Last Revision: 2022-01-28
 
 % Legnth of one side - similar to the other 3.
 sideLength = pdist([a,b;a,d],'euclidean');
 
 % Number of points considering side length, screen and visual angles.
-numPoints = sideLength / (spacingBetwInDeg * ppd);
+numPoints = sideLength / glare.glareSpacingPixs;
 
 % Separation between points.
 sepBetweenPointsInPix= linspace(0,sideLength,numPoints);

@@ -78,13 +78,6 @@ results.HASGLARE=HASGLARE;
 results.BACKGROUNDLUM=BACKGROUNDLUM; 
 
 %%
-% figure, plot(1:numel(model.pdf), model.pdf);
-% 
-% %%
-% 
-% figure, plot(model.i);
-%%
-
 betaEstimate=QuestBetaAnalysis(model);
 
 %%
@@ -95,15 +88,13 @@ sd=QuestSd(model);
 
 %% Save data
 
-% % save responseMatrix
+% save responseMatrix
 responseFileName=sprintf('%s_%s_%s_%i_answers',PARTICIPANTNAME,string(SPATIALFREQ),METHOD,HASGLARE);
 responseFilePathName=fullfile(pwd,'Answers',[responseFileName '.mat']);
 save(responseFilePathName,'responseMatrix','timesLog', 'model');
-% 
-% % Save Results.
+
+% Save Results.
 resultsFileName=sprintf('%s_%s_%s_%i_results',PARTICIPANTNAME,string(SPATIALFREQ),METHOD,HASGLARE);
 resultsFilePathName=fullfile(pwd,'Results',[resultsFileName '.mat']);
 save(resultsFilePathName,'results', 'intensityNT', 'intensityT', 'model');
-
-%% 
 

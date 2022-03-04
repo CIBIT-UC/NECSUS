@@ -1,6 +1,16 @@
 function [ stimuli ] = stimulusDefinition( lcd, gabor, window)
-%STIMULUSDEFINITION Summary of this function goes here
-%   Detailed explanation goes here
+%STIMULUSDEFINITION  One-line description here, please.
+%   output = stimulusDefinition(input)
+%
+%   Example
+%   stimulusDefinition
+%
+%   See also
+
+% Author: Bruno Direito (bruno.direito@uc.pt)
+% Coimbra Institute for Biomedical Imaging and Translational Research, University of Coimbra.
+% Created: 2022-01-27; Last Revision: 2022-01-27
+
 
 
 %-------------------------GABOR INFORMATION---------------------------%
@@ -18,7 +28,7 @@ stimuli.sigma = stimuli.gaborDimPix/7;
 stimuli.frameDuration = Screen('GetFlipInterval', window);
 
 % Presentation Time for the Gabor in seconds and frames.
-stimuli.stimDurationSecs = 0.5; %500msec
+stimuli.stimDurationSecs = .5; %500msec
 stimuli.stimDurationFrames = round(stimuli.stimDurationSecs/stimuli.frameDuration);
 
 % Interstimulus interval time in seconds and frames
