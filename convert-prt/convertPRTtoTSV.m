@@ -22,8 +22,8 @@ for cc = 1:length(cond_names)
     Condition = [Condition ; repmat({cond_names(cc)},blockNum(cc),1)];
     Onset = [Onset ; msecOnset.(cond_names{cc})(:,1).*TR-TR];
     Duration = [Duration; blockDur.(cond_names{cc})'*TR];
-     
 end
+
 [Onset,idx] = sort(Onset);
 Condition = Condition(idx);
 Duration = Duration(idx);
