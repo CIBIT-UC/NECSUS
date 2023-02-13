@@ -1,10 +1,10 @@
 #!/bin/sh
-ROOT_RAWDATA="/media/brunomiguel/TOSHIBA\ EXT/NECSUS"
-ROOT_OUPUT='/home/brunomiguel/Documents/data/BIDS_necsus'
+ROOT_OUPUT='/media/bruno/DATA/temp'
 
 
-heudiconv -d /media/brunomiguel/TOSHIBA\ EXT/NECSUS/{subject}/*.dcm \
--s SUBNECSUSUC001 \
+# heudiconv -d /media/bruno/AndreiaMR/Data_NECSUS/NECSUS-Raw/{subject}/*.IMA \
+heudiconv -d /media/bruno/DATA/NECSUS_RAWDATA/{subject}/*/*/*.dcm \
+-s NQUZBUS_DSVAKU_F_1967-11-29_UC136 \
 -c none \
 -f convertall \
 -o $ROOT_OUPUT \
