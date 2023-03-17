@@ -1,0 +1,15 @@
+files = dir('events');
+
+%%
+
+for f = files
+    
+    if ~f.isdir
+        parts = split(f.name, '_');
+
+        dest=fullfile('E:\BIDS_necsus', parts{1}, parts{2}, "func')
+
+        status = copyfile('myfile1.m', 'restricted');
+    end
+
+end

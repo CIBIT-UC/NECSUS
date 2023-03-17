@@ -1,0 +1,107 @@
+{
+    "bvnbformat": 1,
+    "bvnbformat_minor": 0,
+    "cells": [
+        {
+            "cell_type": "code",
+            "execution_count": 40,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+                "# doc_fmr = bv.adoc\n",
+                "subjs = ['sub-02']\n",
+                "sessions = ['ses-01']\n",
+                "runs = ['run-01']\n",
+                "tasks = ['glare']\n",
+                "\n",
+                "\n",
+                "stc_pp = 'SCCTBL'\n",
+                "mc_pp = '3DMCTS'\n",
+                "tfglm_pp='THPGLMF3c'\n",
+                "\n",
+                "vtc_sm_pp='SD3DVSS6.00mm'\n",
+                "\n",
+                "vtc_pp   = f'{stc_pp}_{mc_pp}_{tfglm_pp}_MNI_{vtc_sm_pp}'"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 41,
+            "metadata": {
+            },
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "Processing participant sub-02\n",
+                        "Finished processing participant sub-02, session ses-01"
+                    ]
+                }
+            ],
+            "source": [
+                "\n",
+                "for s in subjs:\n",
+                "    print(f\"Processing participant {s}\")\n",
+                "    for ses in sessions:\n",
+                "        vmr = bv.open(f\"derivatives/rawdata_bv/{s}/{ses}/anat/{s}_{ses}_{runs[0]}_T1w_IIHC_MNI.vmr\")\n",
+                "        if vmr != None:\n",
+                "            for r in runs:\n",
+                "                for task in tasks:\n",
+                "                    vtcfile = f\"derivatives/rawdata_bv/{s}/{ses}/func/{s}_{ses}_task-{task}_{r}_bold_{vtc_pp}.vtc\"\n",
+                "                    \n",
+                "                    if vmr.link_vtc(vtcfile):\n",
+                "                    \n",
+                "                        vmr.clear_run_designmatrix()\n",
+                "                        vmr.create_run_designmatrix_from_protocol(0, True)\n",
+                "                        \n",
+                "                        vmr.save_run_designmatrix('glare_contrast.sdm')\n",
+                "                        \n",
+                "                        vmr.compute_run_glm()\n",
+                "                        vmr.show_glm()\n",
+                "                        vmr.save_glm('glare_FMR.glm')\n",
+                "\n",
+                "                    else:\n",
+                "                        print(f\"  Error: could not link {r} vtc file of {s}\")\n",
+                "            # vmr.close()\n",
+                "        else:\n",
+                "            print(f\"  Error loading VMR of participant {s} session {ses}\")\n",
+                "        print(f\"Finished processing participant {s}, session {ses}\")    \n",
+                "        "
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 39,
+            "metadata": {
+            },
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "'derivatives/rawdata_bv/sub-02/ses-01/func/sub-02_ses-01_task-glare_run-01_bold_SCCTBL_3DMCTS_THPGLMF3c_MNI__SD3DVSS6.00mm.vtc'"
+                    ]
+                }
+            ],
+            "source": [
+                "f\"derivatives/rawdata_bv/{s}/{ses}/func/{s}_{ses}_task-{task}_{r}_bold_{vtc_pp}.vtc\""
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": -1,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+            ]
+        }
+    ],
+    "log_brainvoyager_code": false,
+    "metadata": {
+    }
+}
