@@ -4,23 +4,16 @@
     "cells": [
         {
             "cell_type": "code",
-            "execution_count": 15,
+            "execution_count": -1,
             "metadata": {
             },
             "outputs": [
-                {
-                    "name": "stdout",
-                    "output_type": "stream",
-                    "text": [
-                        "Processing subjects: ['sub-02']; sessions: ['ses-01']; runs: ['run-01'] and tasks:['glare']"
-                    ]
-                }
             ],
             "source": [
                 "subjs = ['sub-02']\n",
-                "sessions = ['ses-01']\n",
-                "runs = ['run-01']\n",
-                "tasks = ['glare']\n",
+                "sessions = ['ses-01', 'ses-02']\n",
+                "runs = ['run-01', 'run-02']\n",
+                "tasks = ['glare', 'noglare']\n",
                 "\n",
                 "\n",
                 "stc_pp = 'SCCTBL'\n",
@@ -35,25 +28,17 @@
         },
         {
             "cell_type": "code",
-            "execution_count": 16,
+            "execution_count": -1,
             "metadata": {
             },
             "outputs": [
-                {
-                    "name": "stdout",
-                    "output_type": "stream",
-                    "text": [
-                        "Processing participant sub-02\n",
-                        "    Completed spatial smoothing (6 mm) of run-01\n",
-                        "Finished processing participant sub-02, session ses-01"
-                    ]
-                }
             ],
             "source": [
                 "\n",
                 "for s in subjs:\n",
                 "    print(f\"Processing participant {s}\")\n",
                 "    for ses in sessions:\n",
+                "        print(f\"Processing session {ses}\")\n",
                 "        vmr = bv.open(f\"derivatives/rawdata_bv/{s}/{ses}/anat/{s}_{ses}_{runs[0]}_T1w_IIHC_MNI.vmr\")\n",
                 "        if vmr != None:\n",
                 "            for r in runs:\n",

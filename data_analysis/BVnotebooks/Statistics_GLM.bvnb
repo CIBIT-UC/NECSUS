@@ -4,17 +4,17 @@
     "cells": [
         {
             "cell_type": "code",
-            "execution_count": 40,
+            "execution_count": -1,
             "metadata": {
             },
             "outputs": [
             ],
             "source": [
-                "# doc_fmr = bv.adoc\n",
+                "# doc_fmr = bv.doc\n",
                 "subjs = ['sub-02']\n",
-                "sessions = ['ses-01']\n",
-                "runs = ['run-01']\n",
-                "tasks = ['glare']\n",
+                "sessions = ['ses-01', 'ses-02']\n",
+                "runs = ['run-01', 'run-02']\n",
+                "tasks = ['glare', 'noglare']\n",
                 "\n",
                 "\n",
                 "stc_pp = 'SCCTBL'\n",
@@ -28,24 +28,18 @@
         },
         {
             "cell_type": "code",
-            "execution_count": 41,
+            "execution_count": -1,
             "metadata": {
             },
             "outputs": [
-                {
-                    "name": "stdout",
-                    "output_type": "stream",
-                    "text": [
-                        "Processing participant sub-02\n",
-                        "Finished processing participant sub-02, session ses-01"
-                    ]
-                }
             ],
             "source": [
                 "\n",
                 "for s in subjs:\n",
                 "    print(f\"Processing participant {s}\")\n",
                 "    for ses in sessions:\n",
+                "        print(f\"Processing session {ses}\")\n",
+                "\n",
                 "        vmr = bv.open(f\"derivatives/rawdata_bv/{s}/{ses}/anat/{s}_{ses}_{runs[0]}_T1w_IIHC_MNI.vmr\")\n",
                 "        if vmr != None:\n",
                 "            for r in runs:\n",
@@ -57,11 +51,14 @@
                 "                        vmr.clear_run_designmatrix()\n",
                 "                        vmr.create_run_designmatrix_from_protocol(0, True)\n",
                 "                        \n",
-                "                        vmr.save_run_designmatrix('glare_contrast.sdm')\n",
+                "                        vmr.save_run_designmatrix(f\"{s}_{ses}_task-{task}_{r}_bold_taskpredictors.sdm\")\n",
+                "                        print(f\"sdm file created: {s}_{ses}_task-{task}_{r}_bold_taskpredictors.sdm\")\n",
+                "\n",
                 "                        \n",
                 "                        vmr.compute_run_glm()\n",
                 "                        vmr.show_glm()\n",
-                "                        vmr.save_glm('glare_FMR.glm')\n",
+                "                        vmr.save_glm(f\"{s}_{ses}_task-{task}_{r}_bold_taskglm.glm\")\n",
+                "                        print(f\"glm file created: {s}_{ses}_task-{task}_{r}_bold_taskglm.glm\")\n",
                 "\n",
                 "                    else:\n",
                 "                        print(f\"  Error: could not link {r} vtc file of {s}\")\n",
@@ -70,34 +67,6 @@
                 "            print(f\"  Error loading VMR of participant {s} session {ses}\")\n",
                 "        print(f\"Finished processing participant {s}, session {ses}\")    \n",
                 "        "
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": 39,
-            "metadata": {
-            },
-            "outputs": [
-                {
-                    "name": "stdout",
-                    "output_type": "stream",
-                    "text": [
-                        "'derivatives/rawdata_bv/sub-02/ses-01/func/sub-02_ses-01_task-glare_run-01_bold_SCCTBL_3DMCTS_THPGLMF3c_MNI__SD3DVSS6.00mm.vtc'"
-                    ]
-                }
-            ],
-            "source": [
-                "f\"derivatives/rawdata_bv/{s}/{ses}/func/{s}_{ses}_task-{task}_{r}_bold_{vtc_pp}.vtc\""
-            ]
-        },
-        {
-            "cell_type": "code",
-            "execution_count": -1,
-            "metadata": {
-            },
-            "outputs": [
-            ],
-            "source": [
             ]
         }
     ],
