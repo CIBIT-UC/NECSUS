@@ -15,20 +15,20 @@ outputPath = 'events';
 %% Start
 [ cond_names , intervalsPRT ,~,~,~, blockDur, blockNum, msecOnset ] = readProtocol( fullfile(prtPath,[prtFile(1:end-4) '.prt']) , TR );
 
-Condition = {};
-Onset = [];
-Duration = [];
+trial_type = {};
+onset = [];
+duration = [];
 for cc = 1:length(cond_names)
-    Condition = [Condition ; repmat({cond_names(cc)},blockNum(cc),1)];
-    Onset = [Onset ; msecOnset.(cond_names{cc})(:,1).*TR-TR];
-    Duration = [Duration; blockDur.(cond_names{cc})'*TR];
+    trial_type = [trial_type ; repmat({cond_names(cc)},blockNum(cc),1)];
+    onset = [onset ; msecOnset.(cond_names{cc})(:,1).*TR-TR];
+    duration = [duration; blockDur.(cond_names{cc})'*TR];
 end
 
-[Onset,idx] = sort(Onset);
-Condition = Condition(idx);
-Duration = Duration(idx);
+[onset,idx] = sort(onset);
+trial_type = trial_type(idx);
+duration = duration(idx);
 
-T = table(Condition,Onset,Duration);
+T = table(onset,duration,trial_type);
 
 export_file = fullfile(outputPath, [outFile '.txt']);
 

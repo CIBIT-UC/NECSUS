@@ -1,0 +1,303 @@
+{
+    "bvnbformat": 1,
+    "bvnbformat_minor": 0,
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {
+            },
+            "source": [
+                "## Preprocess FMRs, VMRs and normalize FMRs and VMRs to MNI space\n",
+                "\n",
+                "This script loads anatomical and functional data from original NIfTI files:\n",
+                " - The opened anatomical (VMR) files are inhomogeneity corrected, including brain masking.\n",
+                " - The inhomogeneity corrected VMRs are normalized into MNI space\n",
+                " - The opened functional (FMR) files are preprocessed - here only motion corrected\n",
+                " - The FMRs are normalized into MNI space\n",
+                "\n",
+                "Note that this script should be in the top project folder (e.g. BIDS_necsus) since all relative paths below are interpreted relative to the location of this notebook file."
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+            },
+            "source": [
+                "---\n",
+                "###  Step 0: Select data.\n",
+                "\n",
+                "Set the subjects, sessions, runs and tasks. This scripts will go through the BIDS dataset."
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": -1,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+                "subjs = ['sub-02' ]\n",
+                "sessions = ['ses-01', 'ses-02']\n",
+                "runs = ['run-01', 'run-02']\n",
+                "tasks = ['glare', 'noglare']\n",
+                "\n",
+                "\n",
+                "stc_pp = 'SCCTBL'\n",
+                "mc_pp = '3DMCTS'\n",
+                "tfglm_pp='THPGLMF3c'\n",
+                "\n",
+                "\n",
+                "print(f'Processing subjects: {subjs}; sessions: {sessions}; runs: {runs} and tasks:{tasks}')"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+            },
+            "source": [
+                "---\n",
+                "\n",
+                "###  Step 1: Create anatomical (VMR) files, Perform inhomogeneity corrected, including brain masking.\n",
+                " The script will go through the datasets identified, load the nii files corresponding to the identified runs and perform inhomogeneity correction and brain masking - skull extraction. Then, anatomical data will be normalized to MNI.\n",
+                "\n",
+                "#### To Do: identify outputs"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": -1,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+                "print(\"Anatomical preprocessing: IIHC, MNI\")\n",
+                "for s in subjs:\n",
+                "    print(f\"Processing participant {s}\")\n",
+                "    for ses in sessions:\n",
+                "        print(f\"Processing sess {ses}\")\n",
+                "        for r in runs:\n",
+                "            print(f\"Processing run {r}\")\n",
+                "            \n",
+                "            print(f\"{s}/{ses}/anat/{s}_{ses}_{r}_T1w.nii.gz\")\n",
+                "            \n",
+                "            vmr = bv.open(f\"{s}/{ses}/anat/{s}_{ses}_{r}_T1w.nii.gz\")\n",
+                "            if vmr != None:\n",
+                "                ok_iihc = vmr.correct_intensity_inhomogeneities()\n",
+                "                    \n",
+                "                ok_mni  = vmr.normalize_to_mni_space()\n",
+                "                vmr.snapshot()\n",
+                "\n",
+                "                vmr.close()\n",
+                "                print(f\"  performed IIHC: {ok_iihc}, performed MNI: {ok_mni}\") \n",
+                "            else:\n",
+                "                print(f\"  Error loading VMR of participant {s}, session {ses}, run {r}\")\n",
+                "            print(f\"Finished processing participant {s}, session {ses}, run {r}\")        "
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+            },
+            "source": [
+                "Final remarks: Check anatomical VMR files and MNI normalization."
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+            },
+            "source": [
+                "---\n",
+                "\n",
+                "###  Step 2:The opened functional (FMR) files are preprocessed - here only motion corrected.\n",
+                " The script will go through the datasets identified, load the nii files corresponding to the identified runs and perform motion correction. \n",
+                "\n",
+                "#### To Do: identify outputs"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": -1,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+                "import os\n",
+                "\n",
+                "print(\"Functional preprocessing: 3DMC\")\n",
+                "\n",
+                "for s in subjs:\n",
+                "    for ses in sessions:\n",
+                "        for t in tasks:\n",
+                "            for r in runs:\n",
+                "                print(f\"Processing file: {s}/{ses}/func/{s}_{ses}_task-{t}_{r}_bold.nii.gz\")                         \n",
+                "                # print(os.path.isfile(f\"Processing file: {s}/{ses}/func/{s}_{ses}_task-{t}_{r}_bold.nii.gz\"))\n",
+                "\n",
+                "                fmr = bv.open(f\"{s}/{ses}/func/{s}_{ses}_task-{t}_{r}_bold.nii.gz\")                \n",
+                "                \n",
+                "                if fmr != None:\n",
+                "                    print(f\"Processing step STC\")\n",
+                "                    ok_stc = fmr.correct_slicetiming_using_timingtable(1)\n",
+                "                    fmr.close()\n",
+                "                    \n",
+                "                # print(f\"derivatives/rawdata_bv/{s}/{ses}/func/{s}_{ses}_task-{t}_{r}_bold_{stc_pp}.fmr\")\n",
+                "                fmr = bv.open(f\"derivatives/rawdata_bv/{s}/{ses}/func/{s}_{ses}_task-{t}_{r}_bold_{stc_pp}.fmr\")   \n",
+                "\n",
+                "                if fmr != None:\n",
+                "                    print(f\"Processing step Motion correction\")\n",
+                "                    ok_mc = fmr.correct_motion()\n",
+                "                    fmr.close()\n",
+                "                    \n",
+                "                fmr = bv.open(f\"derivatives/rawdata_bv/{s}/{ses}/func/{s}_{ses}_task-{t}_{r}_bold_{stc_pp}_{mc_pp}.fmr\")   \n",
+                "                    \n",
+                "                if fmr != None:\n",
+                "                    print(f\"Processing step temporal filtering\")\n",
+                "                    ok_ftglm = fmr.filter_temporal_highpass_glm_fourier(3)\n",
+                "                    \n",
+                "                    fmr.close()\n",
+                "                    \n",
+                "                    print(f\"    [SUCCESS] performed functional preprocessing for run {r}: {ok_stc} {ok_mc} {ok_ftglm}\")\n",
+                "                else:\n",
+                "                    print(f\"    [ERROR]  Error loading {r} of participant {s}\")\n",
+                "                    \n",
+                "    print(f\"Finished processing participant {s}\")  \n",
+                "    "
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+            },
+            "source": [
+                "---\n",
+                "\n",
+                "###  Step 3:The opened functional (FMR) files are normalized into MNI.\n",
+                "The FMRs are normalized into MNI space. Coregistrations fmr to vmr will create IA, FA, trf matrices. If all correct, continue, else, need to perform coregistration manually.\n",
+                "\n",
+                "#### To Do: identify outputs"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": -1,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+                "use_anat = 'IIHC'\n",
+                "\n",
+                "fmr_pp   = f'{stc_pp}_{mc_pp}_{tfglm_pp}'\n",
+                "\n",
+                "print(\"FMR-VMR coregistration and FMR MNI normalization\")\n",
+                "for s in subjs:\n",
+                "    \n",
+                "    print(f\"Processing participant {s}\")\n",
+                "        \n",
+                "\n",
+                "    for ses in sessions:\n",
+                "        print(f\"Processing session {ses}\")       \n",
+                "                 \n",
+                "        vmr_base = f\"{s}_{ses}_{runs[0]}_T1w_{use_anat}\"\n",
+                "            \n",
+                "        print(f\"VMR file: {vmr_base}\")\n",
+                "            \n",
+                "        vmr = bv.open(f\"derivatives/rawdata_bv/{s}/{ses}/anat/{vmr_base}.vmr\")\n",
+                "            \n",
+                "        if vmr != None:\n",
+                "            \n",
+                "            for t in tasks:\n",
+                "\n",
+                "                print(f\"Processing task {t}\")\n",
+                "        \n",
+                "                for r in runs:\n",
+                "    \n",
+                "                    fmr_base = f\"{s}_{ses}_task-{t}_{r}_bold\"\n",
+                "                    ok_coreg = vmr.coregister_fmr_to_vmr(f\"../func/{fmr_base}.fmr\")\n",
+                "                    \n",
+                "                    print(f\" FMR-VMR coreg for run {r}: {ok_coreg}\")\n",
+                "                 \n",
+                "                    vmr.snapshot()\n",
+                "                    \n",
+                "       \n",
+                "            vmr.close()\n",
+                "        \n",
+                "        else:\n",
+                "            print(f\"    [ERROR] Error loading VMR of participant {s}\")\n",
+                "            \n",
+                "    print(f\"Finished processing participant {s}\")      \n",
+                "    "
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {
+            },
+            "source": [
+                "---\n",
+                "\n",
+                "###  Step 4:Create vtc.\n",
+                "Create VTC base on coregistration files"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": -1,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+                "\n",
+                "for s in subjs:\n",
+                "    print(f\"Processing participant {s}\")\n",
+                "    \n",
+                "    for ses in sessions:\n",
+                "        print(f\"Processing session {ses}\")            \n",
+                "        vmr_base = f\"{s}_{ses}_{runs[0]}_T1w_{use_anat}\"\n",
+                "        print(f\"VMR file: {vmr_base}\")\n",
+                "        vmr = bv.open(f\"derivatives/rawdata_bv/{s}/{ses}/anat/{vmr_base}.vmr\")\n",
+                "        if vmr != None:\n",
+                "            for t in tasks:\n",
+                "                print(f\"Processing task {t}\")\n",
+                "                for r in runs:\n",
+                "\n",
+                "                    fmr_base = f\"{s}_{ses}_task-{t}_{r}_bold\"                        \n",
+                "                    print(f\" FMR-VMR coreg for run {r}: {ok_coreg}\")\n",
+                "                    \n",
+                "                \n",
+                "                    in_fmr   = f\"{fmr_base}_{fmr_pp}.fmr\"\n",
+                "                    ia_trf   = f\"{fmr_base}-TO-{vmr_base}_IA.trf\"\n",
+                "                    fa_trf   = f\"{fmr_base}-TO-{vmr_base}_FA.trf\"\n",
+                "                    mni_trf  = f\"{vmr_base}_TO_MNI_a12_adjBBX.trf\"\n",
+                "                    out_vtc  = f\"../func/{fmr_base}_{fmr_pp}_MNI.vtc\"\n",
+                "                    res      = 2\n",
+                "                    interpol = 2  # 0 -> nearest nbr, 1 -> trilin, 2 -> sinc\n",
+                "                    ok_vtc = vmr.create_vtc_in_mni_space(f\"../func/{in_fmr}\", f\"../func/{ia_trf}\", f\"../func/{fa_trf}\", mni_trf, f\"../func/{out_vtc}\", res, interpol)\n",
+                "                    print(f\"    performed VTC creation for run {r}: {ok_vtc}\")  \n",
+                "                        \n",
+                "            vmr.close()\n",
+                "        else:\n",
+                "            print(f\"    [ERROR] Error loading VMR of participant {s}\")\n",
+                "    print(f\"Finished processing participant {s}\")      \n",
+                "    "
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": -1,
+            "metadata": {
+            },
+            "outputs": [
+            ],
+            "source": [
+            ]
+        }
+    ],
+    "log_brainvoyager_code": false,
+    "metadata": {
+    }
+}

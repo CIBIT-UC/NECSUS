@@ -16,18 +16,23 @@ out_fn={'noglare_run-01';...
 TR=2;
 
 %%
-sub='34';
+subs=51;
 
 %% Contrast runs
 
-for i=1:numel(fn)
+for s = subs
+
     
-    outFn=['sub-' sub '_ses-01_task-' out_fn{i} '_events'];
+    sub = num2str(s,'%02.f');
+
+    for i=1:numel(fn)
+        
+        outFn=['sub-' sub '_ses-02_task-' out_fn{i} '_events'];
+        
+        fprintf('Creating file %s based on prt.\n',outFn);
+        
+        convertPRTtoTSV(prtPath, fn{i}, outFn, TR);
     
-    fprintf('Creating file %s based on prt.\n',outFn);
-    
-    convertPRTtoTSV(prtPath, fn{i}, outFn, TR);
+    end
 
 end
-
-
