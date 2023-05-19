@@ -16,7 +16,7 @@ out_fn={'noglare_run-01';...
 TR=2;
 
 %%
-subs=51;
+subs=[52]
 
 %% Contrast runs
 

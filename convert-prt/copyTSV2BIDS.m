@@ -11,8 +11,12 @@ for f = 1:numel(files)
         parts = split(file.name, '_');
 
         % destination folder.
-        dest=fullfile('E:\BIDS_necsus', parts{1}, parts{2}, 'func');
-
+        %WINDOWS
+        % dest=fullfile('E:\BIDS_necsus', parts{1}, parts{2}, 'func');
+        % LINUX
+        dest=fullfile('/media/bruno/DATA/BIDS_necsus', parts{1}, parts{2}, 'func');
+        
+        
         % source file.
         source=fullfile(file.folder, file.name);
 

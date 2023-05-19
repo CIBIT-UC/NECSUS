@@ -6,6 +6,29 @@ ROOT_CODE='/home/bruno/Documents/GitHub/NECSUS/convert-bids-admin/LOCAL'
 
 heudiconv -d /media/bruno/DATA/NECSUS_RAWDATA/{subject}/*/*/*.dcm \
 --anon-cmd $ROOT_CODE//rename_script_necsus.py \
+-s ERQHESEEP_GQYSMI_F_1956-08-01_UC052 \
+--ses 01 \
+-f $ROOT_CODE/heuristic_necsus.py \
+-c dcm2niix -b \
+-o $ROOT_OUPUT \
+--overwrite
+
+
+heudiconv -d /media/bruno/DATA/NECSUS_RAWDATA/{subject}/*/*/*.dcm \
+--anon-cmd $ROOT_CODE//rename_script_necsus.py \
+-s BOLWYSFN_UDOWG_F_1956-07-24_UC052V2 \
+--ses 02 \
+-f $ROOT_CODE/heuristic_necsus.py \
+-c dcm2niix -b \
+-o $ROOT_OUPUT \
+--overwrite
+
+
+
+
+: '
+heudiconv -d /media/bruno/DATA/NECSUS_RAWDATA/{subject}/*/*/*.dcm \
+--anon-cmd $ROOT_CODE//rename_script_necsus.py \
 -s ODRLPT_SFPUPMT_F_1955-01-17_UC070V2 \
 --ses 02 \
 -f $ROOT_CODE/heuristic_necsus.py \
@@ -13,7 +36,7 @@ heudiconv -d /media/bruno/DATA/NECSUS_RAWDATA/{subject}/*/*/*.dcm \
 -o $ROOT_OUPUT \
 --overwrite
 
-: '
+
 heudiconv -d /media/bruno/DATA/NECSUS_RAWDATA/{subject}/*/*/*.dcm \
 --anon-cmd $ROOT_CODE//rename_script_necsus.py \
 -s CGTHDG_YRLTP_F_1965-03-04_UC073 \
